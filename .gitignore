@@ -1,0 +1,8 @@
+node_modules/
+*.log
+.DS_Store
+.vite/
+
+# stray probe files created while the dev disk was full — safe to delete
+_disktest.txt
+src/_test/

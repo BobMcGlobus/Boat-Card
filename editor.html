@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Boat Card — Editor Preview</title>
+    <style>
+      :root {
+        --primary-text-color: #16233a;
+        --secondary-text-color: #48566e;
+        --card-background-color: #fff;
+        --secondary-background-color: #eef1f6;
+        --divider-color: #d5dbe6;
+        --primary-color: #5b7cfa;
+        --ha-card-border-radius: 18px;
+      }
+      body {
+        margin: 0;
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        background: #e7eef8;
+        color: var(--primary-text-color);
+        padding: 20px;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+        align-items: start;
+      }
+      .panel {
+        background: #fff;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+      h2 { font-size: 1rem; margin: 0 0 12px; }
+      h1 { max-width: 1180px; margin: 0 auto 14px; font-size: 1.1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Boat Card — Editor Preview (Editor links, Live-Vorschau rechts)</h1>
+    <div class="wrap">
+      <div class="panel">
+        <h2>Karten-Editor</h2>
+        <div id="editor"></div>
+      </div>
+      <div>
+        <h2 style="max-width:380px">Vorschau</h2>
+        <div id="preview"></div>
+      </div>
+    </div>
+    <script type="module" src="/dev/editor-demo.js"></script>
+  </body>
+</html>

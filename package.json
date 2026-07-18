@@ -1,0 +1,29 @@
+{
+  "name": "boat-card",
+  "version": "1.0.0",
+  "description": "Boat Card — a family of Home Assistant Lovelace cards for a sailboat (overview with a graphical boat scene, battery & solar, fridge, PTZ camera, Grafana).",
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "watch": "vite build --watch"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "custom-card",
+    "boat",
+    "sailing",
+    "victron",
+    "ecowitt"
+  ],
+  "author": "BobMcGlobus",
+  "license": "MIT",
+  "dependencies": {
+    "lit": "^3.1.4"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}
