@@ -331,17 +331,27 @@ export class BoatChipsEditor extends LitElement {
     const st = getEntity(this.hass, chip.entity);
     const color = resolveColor(chip.color) ?? 'var(--bc-accent, #5b7cfa)';
     const val = st ? fmtState(this.hass, st, { precision: chip.precision, unit: chip.unit } as any) : '—';
+    const dir: DotDir = pos.dot ?? (pos.x >= 50 ? 'left' : 'right');
+    const label = (chip.name ?? friendlyName(st, chip.entity)) || `#${i + 1}`;
+    // WYSIWYG anchor: the draggable dot sits exactly on x/y, the label offsets
+    // in the configured direction — same geometry the card uses.
     return html`<div
-      class="ce-dot ${i === this._expanded ? 'active' : ''}"
+      class="ce-anchor dot-${dir} ${i === this._expanded ? 'active' : ''}"
       style="left:${pos.x}%;top:${pos.y}%;--ac:${color}"
-      @pointerdown=${(e: PointerEvent) => this._onDotDown(e, i)}
-      @pointermove=${this._onDotMove}
-      @pointerup=${(e: PointerEvent) => this._onDotUp(e, i)}
-      @pointercancel=${(e: PointerEvent) => this._onDotUp(e, i)}
-      title=${chip.name ?? friendlyName(st, chip.entity)}
     >
-      <span class="d"></span>
-      <span class="lbl">${(chip.name ?? friendlyName(st, chip.entity)) || `#${i + 1}`}: ${val}</span>
+      <span
+        class="ce-adot"
+        @pointerdown=${(e: PointerEvent) => this._onDotDown(e, i)}
+        @pointermove=${this._onDotMove}
+        @pointerup=${(e: PointerEvent) => this._onDotUp(e, i)}
+        @pointercancel=${(e: PointerEvent) => this._onDotUp(e, i)}
+        title=${label}
+      ></span>
+      <span
+        class="ce-albl"
+        @click=${() => (this._expanded = this._expanded === i ? -1 : i)}
+        >${label}: ${val}</span
+      >
     </div>`;
   }
 
@@ -450,32 +460,36 @@ export class BoatChipsEditor extends LitElement {
       object-fit: contain;
       pointer-events: none;
     }
-    .ce-dot {
+    .ce-anchor {
       position: absolute;
-      transform: translate(-50%, -50%);
-      cursor: grab;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      touch-action: none;
+      --gap: 11px;
+      --dg: 3px;
     }
-    .ce-dot:active {
-      cursor: grabbing;
-    }
-    .ce-dot .d {
-      width: 14px;
-      height: 14px;
+    .ce-adot {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
+      transform: translate(-50%, -50%);
       background: var(--ac);
       border: 2px solid #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-      flex: 0 0 auto;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+      cursor: grab;
+      touch-action: none;
     }
-    .ce-dot.active .d {
+    .ce-adot:active {
+      cursor: grabbing;
+    }
+    .ce-anchor.active .ce-adot {
       outline: 2px solid var(--ac);
       outline-offset: 2px;
     }
-    .ce-dot .lbl {
+    .ce-albl {
+      position: absolute;
+      top: 0;
+      left: 0;
       background: rgba(255, 255, 255, 0.92);
       color: #16233a;
       font-size: 0.72rem;
@@ -484,6 +498,31 @@ export class BoatChipsEditor extends LitElement {
       border-radius: 8px;
       white-space: nowrap;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+    }
+    .ce-anchor.dot-right .ce-albl {
+      transform: translate(calc(-100% - var(--gap)), -50%);
+    }
+    .ce-anchor.dot-left .ce-albl {
+      transform: translate(var(--gap), -50%);
+    }
+    .ce-anchor.dot-top .ce-albl {
+      transform: translate(-50%, var(--gap));
+    }
+    .ce-anchor.dot-bottom .ce-albl {
+      transform: translate(-50%, calc(-100% - var(--gap)));
+    }
+    .ce-anchor.dot-top-left .ce-albl {
+      transform: translate(var(--dg), var(--dg));
+    }
+    .ce-anchor.dot-top-right .ce-albl {
+      transform: translate(calc(-100% - var(--dg)), var(--dg));
+    }
+    .ce-anchor.dot-bottom-left .ce-albl {
+      transform: translate(var(--dg), calc(-100% - var(--dg)));
+    }
+    .ce-anchor.dot-bottom-right .ce-albl {
+      transform: translate(calc(-100% - var(--dg)), calc(-100% - var(--dg)));
     }
     .ce-hint {
       padding: 6px 10px;

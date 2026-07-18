@@ -22,6 +22,13 @@ def('ha-icon-button', class extends HTMLElement {
     '<button><slot></slot></button>'; }
 });
 
+def('ha-camera-stream', class extends HTMLElement {
+  constructor(){ super(); this.attachShadow({mode:'open'}).innerHTML =
+    '<style>:host{display:block;width:100%;height:100%}</style>' +
+    '<div style="width:100%;height:100%;display:grid;place-items:center;color:#9fb4d6;' +
+    'background:repeating-linear-gradient(45deg,#1b2a44,#1b2a44 12px,#22354f 12px,#22354f 24px)">● LIVE</div>'; }
+});
+
 // ha-form stub: renders a simple <input>/<select>/<checkbox> per scalar field so
 // the editor is actually usable in the dev harness (real HA renders rich pickers).
 def('ha-form', class extends HTMLElement {
@@ -72,19 +79,26 @@ const hass = {
     'switch.nav_lights': s('switch.nav_lights','off',{friendly_name:'Licht'}),
     'switch.camera_power': s('switch.camera_power','on',{friendly_name:'Kamera'}),
     'sensor.boat_speed': s('sensor.boat_speed',4.2,{unit_of_measurement:'kn'}),
+    'sensor.battery_voltage': s('sensor.battery_voltage',12.9,{unit_of_measurement:'V'}),
+    'sensor.fridge_temperature': s('sensor.fridge_temperature',6.4,{unit_of_measurement:'°C'}),
+    'camera.mast': s('camera.mast','streaming',{friendly_name:'Mast',entity_picture:''}),
   },
   callService: (...a)=>{ console.log('callService', a); return Promise.resolve(); },
   callWS: ()=>Promise.resolve({}),
 };
 
 let config = {
-  type:'custom:boat-card', title:'Hoppetosse', card_style:'marine', variant:'dock', show_variant_switch:true,
-  chips: [
-    { entity:'sensor.solar_power', icon:'mdi:solar-power', color:'amber', positions:{ dock:{x:58,y:26,dot:'left'} } },
-    { entity:'sensor.battery_soc', icon:'mdi:battery', color:'green', positions:{ dock:{x:66,y:58,dot:'right'} } },
+  type:'custom:boat-card', title:'Hoppetosse', card_style:'withings', columns:2,
+  sections: [
+    { type:'boat', variant:'dock', show_variant_switch:true,
+      chips: [
+        { entity:'sensor.solar_power', icon:'mdi:solar-power', color:'amber', positions:{ dock:{x:58,y:26,dot:'left'} } },
+        { entity:'sensor.battery_soc', icon:'mdi:battery', color:'green', positions:{ dock:{x:40,y:66,dot:'right'} } },
+      ],
+      controls: [ { entity:'switch.fridge', icon:'mdi:fridge-outline', name:'Kühlung' } ] },
+    { type:'battery', name:'Hauptbatterie', soc:'sensor.battery_soc', voltage:'sensor.battery_voltage' },
+    { type:'fridge', switch:'switch.fridge', temperature:'sensor.fridge_temperature' },
   ],
-  stats: [ { entity:'sensor.solar_main_yield_today', icon:'mdi:flash', name:'Ertrag' } ],
-  controls: [ { entity:'switch.fridge', icon:'mdi:fridge-outline', name:'Kühlung' } ],
 };
 
 const editor = document.createElement('boat-card-editor');

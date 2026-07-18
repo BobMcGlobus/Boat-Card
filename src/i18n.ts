@@ -4,6 +4,11 @@ import type { HomeAssistant } from './ha';
 type Dict = Record<string, string>;
 
 const DE: Dict = {
+  boat: 'Boot',
+  sensor: 'Sensor',
+  state: 'Zustand',
+  target: 'Sollwert',
+  no_url: 'Keine URL konfiguriert',
   battery: 'Batterie',
   main_battery: 'Hauptbatterie',
   motor_battery: 'Motorbatterie',
@@ -41,6 +46,11 @@ const DE: Dict = {
 };
 
 const EN: Dict = {
+  boat: 'Boat',
+  sensor: 'Sensor',
+  state: 'State',
+  target: 'Target',
+  no_url: 'No URL configured',
   battery: 'Battery',
   main_battery: 'Main battery',
   motor_battery: 'Motor battery',

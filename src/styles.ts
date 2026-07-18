@@ -1,228 +1,671 @@
 import { css } from 'lit';
-import type { CardStyle } from './types';
-import { isDark, type HomeAssistant } from './ha';
+import { CARD_STYLES, type CardStyle } from './types';
 
-/** Map a card_style to the host class that drives the theme variables. */
+/** Validate + map a card_style to its host class (default: withings). */
 export function styleClass(style?: CardStyle): string {
-  switch (style) {
-    case 'glass':
-      return 's-glass';
-    case 'default':
-      return 's-default';
-    case 'marine':
-    default:
-      return 's-marine';
-  }
+  const s = style && CARD_STYLES.includes(style) ? style : 'withings';
+  return `s-${s}`;
 }
 
-/** Full host class incl. the HA-theme-driven dark flag. */
-export function cardClass(style: CardStyle | undefined, hass?: HomeAssistant): string {
-  return styleClass(style) + (isDark(hass) ? ' dark' : '');
-}
-
-// Shared theme + layout styles for every card in the family.
+// Structure + the six card styles, mirroring HealthCard (tokens renamed --bc-*).
 export const sharedStyles = css`
   :host {
-    /* colour tokens, all overridable by the card_style variants below */
     --bc-card-bg: var(--ha-card-background, var(--card-background-color, #fff));
-    /* solid surface colour (chips, borders) — must never be a gradient */
-    --bc-surface: var(--card-background-color, #fff);
-    --bc-text: var(--primary-text-color, #212121);
-    --bc-muted: var(--secondary-text-color, #727272);
-    --bc-tile-bg: color-mix(in srgb, var(--bc-text) 6%, transparent);
-    --bc-tile-border: color-mix(in srgb, var(--bc-text) 10%, transparent);
-    --bc-accent: var(--bc-marine, #5b7cfa);
-    --bc-solar: #f5a623;
+    --bc-tile-bg: color-mix(in srgb, var(--primary-text-color) 4%, var(--bc-card-bg));
+    --bc-dot-fill: var(--bc-tile-bg);
+    --bc-accent: #5b7cfa;
     --bc-battery: #34c759;
-    --bc-water: #2aa5c7;
-    --bc-radius: var(--ha-card-border-radius, 16px);
-    --bc-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+    --bc-solar: #f5a623;
+    --bc-danger: #e5484d;
+  }
+  .cardroot {
     display: block;
-  }
-
-  .bc-root {
-    position: relative;
-    color: var(--bc-text);
-    background: var(--bc-card-bg);
-    border-radius: var(--bc-radius);
     padding: 16px;
-    box-sizing: border-box;
-    overflow: hidden;
   }
-  .bc-root.no-bg {
+  .cardroot.flat {
+    --bc-tile-bg: transparent;
+    --bc-dot-fill: var(--bc-card-bg);
+  }
+  .cardroot.nobg {
     background: none;
+    box-shadow: none;
+    border: none;
+  }
+  .cardroot.flush {
     padding: 0;
   }
+  .cardroot.flush .header {
+    padding: 0 0 14px 0;
+  }
 
-  /* ---- card_style variants ---- */
+  /* ---- card styles (descendant selectors so tiles + popups match) ---- */
+
+  /* default: plain HA look following the active theme */
   .s-default {
-    --bc-card-bg: var(--ha-card-background, var(--card-background-color, #fff));
-  }
-  .s-marine {
-    --bc-marine: #5b7cfa;
-    --bc-card-bg: linear-gradient(
-      170deg,
-      #cfe0f5 0%,
-      #bcd0f2 42%,
-      #aebff0 100%
+    --bc-tile-bg: var(
+      --secondary-background-color,
+      color-mix(in srgb, var(--primary-text-color) 5%, var(--bc-card-bg))
     );
-    --bc-text: #16233a;
-    --bc-muted: #48566e;
-    --bc-surface: #ffffff;
-    --bc-tile-bg: rgba(255, 255, 255, 0.28);
-    --bc-tile-border: rgba(255, 255, 255, 0.45);
+    --bc-dot-fill: var(--secondary-background-color, var(--bc-card-bg));
+    --bc-tile-radius: var(--ha-card-border-radius, 12px);
   }
+  /* withings: soft tinted tiles = base tokens, nothing extra */
+
+  /* liquid glass: translucent, blurred, specular edge */
   .s-glass {
-    --bc-marine: #6d8bff;
-    --bc-card-bg: color-mix(in srgb, var(--bc-text) 4%, transparent);
-    --bc-tile-bg: color-mix(in srgb, var(--bc-text) 8%, transparent);
-    backdrop-filter: blur(10px);
+    --bc-tile-bg: color-mix(in srgb, var(--bc-card-bg) 42%, transparent);
+    --bc-dot-fill: var(--bc-card-bg);
+    --bc-tile-radius: 22px;
   }
-  /* dark tokens are driven by the HA theme (hass.themes.darkMode), applied via
-     the .dark class on the card_style host — not by prefers-color-scheme */
-  .s-marine.dark {
-    --bc-card-bg: linear-gradient(170deg, #223049 0%, #1a2740 55%, #141f34 100%);
-    --bc-text: #eef3fb;
-    --bc-muted: #a9b6cd;
-    --bc-surface: #1a2740;
-    --bc-tile-bg: rgba(255, 255, 255, 0.08);
-    --bc-tile-border: rgba(255, 255, 255, 0.14);
+  ha-card.cardroot.s-glass {
+    background: color-mix(in srgb, var(--bc-card-bg) 55%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+  }
+  .s-glass .metric {
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 12%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent),
+      0 8px 24px color-mix(in srgb, #000 10%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    backdrop-filter: blur(18px) saturate(1.5);
+  }
+  .s-glass .iconchip {
+    background: color-mix(in srgb, var(--bc-accent) 24%, transparent);
+    border: 1px solid color-mix(in srgb, #fff 30%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent);
   }
 
-  /* ---- header ---- */
-  .bc-head {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-bottom: 12px;
+  /* material you: tonal tiles, filled icon, top-left colour orb */
+  .s-material {
+    --bc-tile-radius: 24px;
   }
-  .bc-title {
-    font-size: 1.9rem;
+  ha-card.cardroot.s-material {
+    border-radius: 28px;
+  }
+  .s-material .metric {
+    position: relative;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bc-accent) 12%, var(--bc-card-bg));
+    --bc-dot-fill: color-mix(in srgb, var(--bc-accent) 12%, var(--bc-card-bg));
+  }
+  .s-material .metric::before {
+    content: '';
+    position: absolute;
+    top: -70px;
+    left: -70px;
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bc-accent) 22%, transparent);
+    pointer-events: none;
+  }
+  .s-material .metric > * {
+    position: relative;
+  }
+  .s-material .iconchip {
+    border-radius: 14px;
+    background: var(--bc-accent);
+    color: var(--bc-card-bg);
+  }
+
+  /* bubble: floating solid modules with big icon bubbles */
+  .s-bubble {
+    --bc-tile-bg: var(--bc-card-bg);
+    --bc-dot-fill: var(--bc-card-bg);
+    --bc-tile-radius: 32px;
+  }
+  ha-card.cardroot.s-bubble {
+    background: none;
+    box-shadow: none;
+    border: none;
+  }
+  .s-bubble .metric {
+    box-shadow: var(--ha-card-box-shadow, 0 2px 8px rgba(0, 0, 0, 0.08));
+    padding: 12px 16px;
+  }
+  .s-bubble .iconchip {
+    width: 42px;
+    height: 42px;
+    background: color-mix(in srgb, var(--bc-accent) 20%, transparent);
+  }
+  .s-bubble .iconchip ha-icon {
+    --mdc-icon-size: 22px;
+  }
+  .s-bubble .name {
     font-weight: 700;
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-  }
-  .bc-subtitle {
-    font-size: 0.9rem;
-    color: var(--bc-muted);
   }
 
-  /* ---- generic tile ---- */
-  .bc-grid {
+  /* magic mirror: pure black, high contrast, monochrome */
+  .s-mirror {
+    --bc-tile-bg: #000;
+    --bc-dot-fill: #000;
+    --bc-tile-radius: 14px;
+    color: #fff;
+  }
+  ha-card.cardroot.s-mirror {
+    background: #000;
+    box-shadow: none;
+    border: none;
+  }
+  .s-mirror .metric {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+  .s-mirror .metric:hover {
+    background: #0d0d0d;
+    --bc-tile-bg: #0d0d0d;
+  }
+  .s-mirror .title,
+  .s-mirror .name,
+  .s-mirror .value,
+  .s-mirror .kv b,
+  .s-mirror .stat-value {
+    color: #fff;
+  }
+  .s-mirror .subtitle,
+  .s-mirror .unit,
+  .s-mirror .secondary,
+  .s-mirror .kv span,
+  .s-mirror .status {
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* ---- base structure ---- */
+  .header {
+    padding: 4px 4px 16px 4px;
+  }
+  .title {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--primary-text-color);
+  }
+  .subtitle {
+    font-size: 14px;
+    color: var(--secondary-text-color);
+    margin-top: 2px;
+  }
+  .metrics {
     display: grid;
+    grid-template-columns: repeat(var(--bc-columns, 2), minmax(0, 1fr));
     gap: 12px;
   }
-  .bc-tile {
+  .cardroot.flat .metrics {
+    gap: 4px;
+  }
+  .cardroot.flat .metric {
+    border: none;
+    box-shadow: none;
+  }
+  .metrics.carousel {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .metrics.carousel::-webkit-scrollbar {
+    display: none;
+  }
+  .metrics.carousel > .metric {
+    flex: 0 0 min(85%, 320px);
+    scroll-snap-align: center;
+  }
+  .metric {
     background: var(--bc-tile-bg);
-    border: 1px solid var(--bc-tile-border);
-    border-radius: 14px;
-    padding: 12px 14px;
+    border-radius: var(--bc-tile-radius, 16px);
     box-sizing: border-box;
-  }
-  .bc-tile-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: var(--bc-muted);
-    font-size: 0.82rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .bc-tile-head ha-icon {
-    --mdc-icon-size: 18px;
-  }
-  .bc-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.1;
-  }
-  .bc-value .u {
-    font-size: 0.62em;
-    font-weight: 600;
-    color: var(--bc-muted);
-    margin-left: 2px;
-  }
-  .bc-sub {
-    font-size: 0.8rem;
-    color: var(--bc-muted);
-    margin-top: 3px;
-  }
-
-  /* ---- stat + controls rows (overview) ---- */
-  .bc-stats {
-    display: flex;
-    justify-content: space-around;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-  }
-  .bc-stat {
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
+    gap: 10px;
+    transition: background 0.15s ease;
+  }
+  /* the boat hero spans the full grid width */
+  .metric.full {
+    grid-column: 1 / -1;
+  }
+  .metric.clickable {
+    cursor: pointer;
+  }
+  .metric.clickable:hover {
+    background: color-mix(in srgb, var(--primary-text-color) 7%, var(--bc-card-bg));
+    --bc-tile-bg: color-mix(in srgb, var(--primary-text-color) 7%, var(--bc-card-bg));
+  }
+  .head {
+    display: flex;
     align-items: center;
-    gap: 3px;
-    min-width: 64px;
-    text-align: center;
+    gap: 10px;
+    min-width: 0;
   }
-  .bc-stat ha-icon {
-    --mdc-icon-size: 24px;
+  .iconchip {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--bc-accent);
+    background: color-mix(in srgb, var(--bc-accent) 14%, transparent);
   }
-  .bc-stat .v {
+  .iconchip ha-icon {
+    --mdc-icon-size: 18px;
+  }
+  .name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .value {
+    font-size: 30px;
     font-weight: 700;
-    font-size: 1.05rem;
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    color: var(--primary-text-color);
   }
-  .bc-stat .l {
-    font-size: 0.72rem;
-    color: var(--bc-muted);
+  .value .unit {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    margin-left: 2px;
+    letter-spacing: 0;
+  }
+  .secondary {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+  }
+  .missing {
+    font-size: 13px;
+    color: var(--secondary-text-color);
   }
 
-  .bc-controls {
+  /* ---- key/value rows (battery, solar) ---- */
+  .kvs {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .kv {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--secondary-text-color);
+  }
+  .kv b {
+    color: var(--primary-text-color);
+    font-weight: 600;
+  }
+  .progress {
+    height: 8px;
+    border-radius: 5px;
+    background: color-mix(in srgb, var(--primary-text-color) 12%, transparent);
+    overflow: hidden;
+  }
+  .progress > span {
+    display: block;
+    height: 100%;
+    border-radius: 5px;
+    background: var(--bar-color, var(--bc-accent));
+    transition: width 0.4s ease;
+  }
+
+  /* ---- boat hero: stage + chips ---- */
+  .stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 41 / 24;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .scene.rm-black {
+    mix-blend-mode: screen;
+  }
+  .variant-switch {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: flex;
+    gap: 2px;
+    background: color-mix(in srgb, var(--bc-card-bg) 70%, transparent);
+    border-radius: 999px;
+    padding: 2px;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+  .variant-switch button {
+    border: none;
+    background: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    border-radius: 999px;
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+  }
+  .variant-switch button.on {
+    background: var(--bc-accent);
+    color: #fff;
+  }
+  .variant-switch ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
+  /* anchors / chips (dot sits ON x/y, label offsets by direction) */
+  .anchor {
+    position: absolute;
+    cursor: pointer;
+    --gap: 9px;
+    --dg: 2px;
+  }
+  .anchor-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--ac);
+    border: 2px solid var(--bc-card-bg);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  }
+  .anchor-chip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: color-mix(in srgb, var(--bc-card-bg) 90%, transparent);
+    border-radius: 0.9em;
+    padding: 0.34em 0.7em;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .anchor-chip .ci {
+    --mdc-icon-size: 18px;
+    color: var(--ac);
+  }
+  .anchor-txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+  }
+  .anchor-name {
+    font-size: 0.82em;
+    font-weight: 600;
+    color: color-mix(in srgb, var(--primary-text-color) 82%, transparent);
+  }
+  .anchor-val {
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .anchor.dot-right .anchor-chip {
+    transform: translate(calc(-100% - var(--gap)), -50%);
+  }
+  .anchor.dot-left .anchor-chip {
+    transform: translate(var(--gap), -50%);
+  }
+  .anchor.dot-top .anchor-chip {
+    transform: translate(-50%, var(--gap));
+  }
+  .anchor.dot-bottom .anchor-chip {
+    transform: translate(-50%, calc(-100% - var(--gap)));
+  }
+  .anchor.dot-top-left .anchor-chip {
+    transform: translate(var(--dg), var(--dg));
+  }
+  .anchor.dot-top-right .anchor-chip {
+    transform: translate(calc(-100% - var(--dg)), var(--dg));
+  }
+  .anchor.dot-bottom-left .anchor-chip {
+    transform: translate(var(--dg), calc(-100% - var(--dg)));
+  }
+  .anchor.dot-bottom-right .anchor-chip {
+    transform: translate(calc(-100% - var(--dg)), calc(-100% - var(--dg)));
+  }
+  .s-glass .anchor-chip {
+    border: 1px solid color-mix(in srgb, #fff 30%, transparent);
+    -webkit-backdrop-filter: blur(8px) saturate(1.4);
+    backdrop-filter: blur(8px) saturate(1.4);
+  }
+  .s-material .anchor-chip {
+    border-radius: 14px;
+  }
+  .s-mirror .anchor-chip {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .s-mirror .anchor-dot {
+    border-color: #000;
+  }
+
+  /* ---- gps footer + controls row (inside boat hero) ---- */
+  .gps-bar {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid color-mix(in srgb, var(--primary-text-color) 10%, transparent);
+    color: var(--secondary-text-color);
+    font-size: 13px;
+  }
+  .gps-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .gps-item ha-icon {
+    --mdc-icon-size: 18px;
+    color: var(--bc-accent);
+  }
+  .controls {
     display: flex;
     justify-content: space-around;
     gap: 8px;
     flex-wrap: wrap;
-    margin-top: 14px;
+    margin-top: 12px;
   }
-  .bc-ctl {
+  .ctl {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
     background: none;
     border: none;
-    color: var(--bc-muted);
+    color: var(--secondary-text-color);
     cursor: pointer;
     font: inherit;
     padding: 4px 6px;
     border-radius: 12px;
-    transition: color 0.15s, background 0.15s;
   }
-  .bc-ctl:hover {
+  .ctl:hover {
     background: var(--bc-tile-bg);
   }
-  .bc-ctl ha-icon {
+  .ctl ha-icon {
     --mdc-icon-size: 26px;
   }
-  .bc-ctl.on {
+  .ctl.on {
     color: var(--bc-accent);
   }
-  .bc-ctl .cl {
-    font-size: 0.78rem;
+  .ctl .cl {
+    font-size: 12px;
   }
 
-  .bc-progress {
-    height: 8px;
-    border-radius: 5px;
-    background: var(--bc-tile-border);
-    overflow: hidden;
-    margin-top: 8px;
+  /* ---- fridge ---- */
+  .fridge {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
-  .bc-progress > span {
-    display: block;
+  .power {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 84px;
+    height: 84px;
+    border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 12%, transparent);
+    background: color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    font: inherit;
+    flex: 0 0 auto;
+    transition: all 0.15s;
+  }
+  .power ha-icon {
+    --mdc-icon-size: 34px;
+  }
+  .power.on {
+    background: color-mix(in srgb, var(--bc-accent) 20%, transparent);
+    border-color: var(--bc-accent);
+    color: var(--bc-accent);
+  }
+  .readouts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+  .ro .l {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+  }
+  .ro .v {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+
+  /* ---- camera ---- */
+  .cam-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: var(--ar, 16 / 9);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+  }
+  .cam {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+  }
+  .cam ha-camera-stream,
+  .cam img {
+    width: 100%;
     height: 100%;
-    border-radius: 5px;
-    background: var(--bar-color, var(--bc-accent));
-    transition: width 0.4s ease;
+    object-fit: cover;
+    display: block;
+  }
+  .cam.off {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #8b949e;
+    height: 100%;
+  }
+  .cam.off ha-icon {
+    --mdc-icon-size: 40px;
+  }
+  .presets {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    color: var(--secondary-text-color);
+  }
+  .presets select {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 15%, transparent);
+    background: var(--bc-tile-bg);
+    color: var(--primary-text-color);
+    font: inherit;
+  }
+  .ptz {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 12px;
+  }
+  .pad {
+    display: grid;
+    grid-template-columns: repeat(3, 38px);
+    grid-template-rows: repeat(3, 38px);
+    gap: 4px;
+    place-items: center;
+  }
+  .pad-center {
+    --mdc-icon-size: 22px;
+    color: var(--secondary-text-color);
+  }
+  .zoom {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ptz-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 15%, transparent);
+    background: var(--bc-tile-bg);
+    color: var(--primary-text-color);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .ptz-btn:hover:not([disabled]) {
+    background: color-mix(in srgb, var(--bc-accent) 25%, transparent);
+  }
+  .ptz-btn[disabled] {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  /* ---- grafana ---- */
+  .g-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .g-open {
+    color: var(--secondary-text-color);
+    text-decoration: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: var(--bc-tile-bg);
+  }
+  .frame {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    background: #0b0f19;
+    display: block;
   }
 `;
