@@ -45,6 +45,15 @@ const CHIP_LABELS: Record<string, string> = {
   y: 'Y (%)',
   dot: 'Label-Richtung',
   hidden: 'In dieser Ansicht ausblenden',
+  // battery banks / solar arrays (boat-items-editor)
+  soc: 'Ladezustand (%)',
+  voltage: 'Spannung',
+  current: 'Strom',
+  power: 'Leistung',
+  temperature: 'Temperatur',
+  time_remaining: 'Restzeit',
+  yield_today: 'Ertrag heute',
+  state: 'Zustand (Text)',
 };
 
 function clean<T extends Record<string, any>>(obj: T): T {

@@ -43,6 +43,21 @@ const hass = () => ({
     'switch.camera_power': s('switch.camera_power','on',{friendly_name:'Kamera'}),
     'camera.mast': s('camera.mast','streaming',{friendly_name:'Mast',entity_picture:''}),
     'select.mast_ptz_preset': s('select.mast_ptz_preset','Steg',{options:['Steg','Cockpit','Bug']}),
+    'sensor.wind_speed': s('sensor.wind_speed',14,{unit_of_measurement:'km/h',friendly_name:'Wind'}),
+    'sensor.wind_bearing': s('sensor.wind_bearing',225,{unit_of_measurement:'°'}),
+    'sensor.wind_gust': s('sensor.wind_gust',26,{unit_of_measurement:'km/h'}),
+    'sensor.rain_today': s('sensor.rain_today',1.6,{unit_of_measurement:'mm'}),
+    'sensor.temp_inside': s('sensor.temp_inside',21.4,{unit_of_measurement:'°C'}),
+    'sensor.temp_outside': s('sensor.temp_outside',19.8,{unit_of_measurement:'°C'}),
+    'weather.boat': s('weather.boat','partlycloudy',{
+      friendly_name:'Bootswetter',
+      forecast: Array.from({length:7},(_,d)=>({
+        datetime:new Date(Date.now()+d*86400000).toISOString(),
+        condition:['sunny','partlycloudy','rainy','cloudy','sunny','lightning-rainy','partlycloudy'][d],
+        temperature:[24,22,18,19,25,21,23][d], templow:[14,13,12,11,15,13,14][d],
+        precipitation:[0,0.2,4.8,1.1,0,6.2,0][d], precipitation_probability:[5,20,80,45,0,90,10][d],
+      })),
+    }),
   },
   callService: (...a)=>{ console.log('callService',a); return Promise.resolve(); },
   callWS: (msg)=>{
@@ -80,12 +95,20 @@ const sections = [
       { entity:'switch.nav_lights', icon:'mdi:lightbulb', name:'Licht' },
       { entity:'switch.camera_power', icon:'mdi:cctv', name:'Kamera' },
     ] },
-  { type:'battery', name:'Hauptbatterie', soc:'sensor.battery_soc', voltage:'sensor.battery_voltage', current:'sensor.battery_current' },
-  { type:'battery', name:'Motorbatterie', soc:'sensor.motor_battery_soc', voltage:'sensor.motor_battery_voltage' },
-  { type:'solar', name:'Solar Hauptmodul', power:'sensor.solar_main_power', yield_today:'sensor.solar_main_yield_today' },
+  { type:'battery', name:'Batterien', banks:[
+      { name:'Hauptbatterie', soc:'sensor.battery_soc', voltage:'sensor.battery_voltage', current:'sensor.battery_current' },
+      { name:'Motorbatterie', soc:'sensor.motor_battery_soc', voltage:'sensor.motor_battery_voltage' },
+    ] },
+  { type:'solar', name:'Solar', arrays:[
+      { name:'Hauptmodul', power:'sensor.solar_main_power', yield_today:'sensor.solar_main_yield_today' },
+      { name:'Zweitmodul', power:'sensor.solar_power' },
+    ] },
+  { type:'weather', wind_speed:'sensor.wind_speed', wind_bearing:'sensor.wind_bearing', wind_gust:'sensor.wind_gust',
+    precipitation:'sensor.rain_today', temp_inside:'sensor.temp_inside', temp_outside:'sensor.temp_outside', temp_water:'sensor.water_temperature' },
+  { type:'forecast', weather:'weather.boat' },
   { type:'fridge', switch:'switch.fridge', temperature:'sensor.fridge_temperature' },
-  { type:'sensor', name:'Wassertemp.', entity:'sensor.water_temperature', icon:'mdi:coolant-temperature' },
   { type:'camera', camera:'camera.mast', switch:'switch.camera_power', ptz:true, presets:'select.mast_ptz_preset' },
+  { type:'radar', zoom:9, latitude:51.37, longitude:7.45 },
 ];
 
 const STYLES = ['default','glass','material','bubble','mirror'];

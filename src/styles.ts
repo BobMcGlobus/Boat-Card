@@ -538,36 +538,43 @@ export const sharedStyles = css`
     color: var(--bc-accent);
   }
   .controls {
-    display: flex;
-    justify-content: space-around;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
     gap: 8px;
-    flex-wrap: wrap;
     margin-top: 12px;
   }
+  /* actors render as outlined mini tiles (like HA's tile card) */
   .ctl {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    background: none;
-    border: none;
+    background: color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-text-color) 14%, transparent);
     color: var(--secondary-text-color);
     cursor: pointer;
     font: inherit;
-    padding: 4px 6px;
-    border-radius: 12px;
+    padding: 10px 8px;
+    border-radius: 14px;
+    transition: all 0.15s;
   }
   .ctl:hover {
-    background: var(--bc-tile-bg);
+    background: color-mix(in srgb, var(--primary-text-color) 8%, transparent);
   }
   .ctl ha-icon {
     --mdc-icon-size: 26px;
   }
   .ctl.on {
     color: var(--bc-accent);
+    border-color: var(--bc-accent);
+    background: color-mix(in srgb, var(--bc-accent) 14%, transparent);
   }
   .ctl .cl {
     font-size: 12px;
+  }
+  .s-mirror .ctl {
+    background: #000;
+    border-color: rgba(255, 255, 255, 0.28);
   }
 
   /* ---- fridge ---- */
@@ -729,6 +736,168 @@ export const sharedStyles = css`
     border: none;
     border-radius: 10px;
     background: #0b0f19;
+    display: block;
+  }
+
+  /* ---- battery banks / solar arrays (multi) ---- */
+  .banks {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .bank {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+  }
+  .bank:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+  .bank-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .bank-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    flex: 1;
+  }
+  .bank-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .bank .kv {
+    font-size: 12px;
+  }
+
+  /* ---- weather chips (Weatherglass sky-details look) ---- */
+  .wx-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: 6px;
+  }
+  .wx {
+    background: color-mix(in srgb, var(--primary-text-color) 4%, transparent);
+    border-radius: 12px;
+    padding: 6px 8px;
+    text-align: center;
+    min-width: 0;
+  }
+  .wx-label {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+  }
+  .wx-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+  }
+  .wx-value ha-icon {
+    --mdc-icon-size: 15px;
+    color: var(--bc-accent);
+  }
+  .wx-sub {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+  }
+  .s-mirror .wx {
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+
+  /* ---- forecast strip (Weatherglass look) ---- */
+  .periods {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .period {
+    border: none;
+    cursor: pointer;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--secondary-text-color);
+    background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+  }
+  .period.active {
+    background: var(--bc-accent);
+    color: #fff;
+  }
+  .fc-strip {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-top: 2px;
+    padding-bottom: 2px;
+  }
+  .fc-strip::-webkit-scrollbar {
+    display: none;
+  }
+  .fc-step {
+    flex: 1 0 auto;
+    min-width: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 4px;
+    border-radius: 12px;
+  }
+  .fc-when {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+  }
+  .fc-ico {
+    --mdc-icon-size: 22px;
+    color: var(--bc-accent);
+  }
+  .fc-pop {
+    font-size: 10px;
+    font-weight: 600;
+    min-height: 13px;
+    color: var(--light-blue-color, #03a9f4);
+  }
+  .fc-pop.empty {
+    opacity: 0;
+  }
+  .fc-temp {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+  }
+  .fc-lo {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+
+  /* ---- radar ---- */
+  .radarframe {
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--primary-text-color) 6%, transparent);
+    aspect-ratio: 16 / 10;
+  }
+  .radarframe iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
     display: block;
   }
 

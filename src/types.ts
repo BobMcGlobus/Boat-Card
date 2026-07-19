@@ -96,6 +96,9 @@ export type SectionType =
   | 'boat'
   | 'battery'
   | 'solar'
+  | 'weather'
+  | 'forecast'
+  | 'radar'
   | 'fridge'
   | 'camera'
   | 'grafana'
@@ -105,11 +108,51 @@ export const SECTION_TYPES: SectionType[] = [
   'boat',
   'battery',
   'solar',
+  'weather',
+  'forecast',
+  'radar',
   'fridge',
   'camera',
   'grafana',
   'sensor',
 ];
+
+/** One battery bank inside a battery section. */
+export interface BatteryBankConfig {
+  name?: string;
+  soc?: string;
+  voltage?: string;
+  current?: string;
+  power?: string;
+  temperature?: string;
+  time_remaining?: string;
+}
+
+/** One solar array inside a solar section. */
+export interface SolarArrayConfig {
+  name?: string;
+  power?: string;
+  yield_today?: string;
+  voltage?: string;
+  current?: string;
+  /** victron charger state (bulk/absorption/float) */
+  state?: string;
+}
+
+export type ForecastType = 'hourly' | 'daily';
+
+/** One step of a weather forecast (subset of HA's forecast schema). */
+export interface ForecastPoint {
+  datetime: string;
+  condition?: string;
+  temperature?: number;
+  templow?: number;
+  precipitation?: number;
+  precipitation_probability?: number;
+  wind_speed?: number;
+  wind_bearing?: number;
+  is_daytime?: boolean;
+}
 
 /**
  * One configurable section. Like HealthCard's MetricConfig: a single interface
@@ -136,18 +179,42 @@ export interface SectionConfig {
   gps?: GpsConfig;
   controls?: (string | ControlConfig)[];
 
-  // ---- battery ----
+  // ---- battery (single bank via the flat fields, or several via banks) ----
   soc?: string;
   voltage?: string;
   current?: string;
   power?: string;
   temperature?: string;
   time_remaining?: string;
+  banks?: BatteryBankConfig[];
 
-  // ---- solar ----
+  // ---- solar (single array via the flat fields, or several via arrays) ----
   yield_today?: string;
   /** victron charger state (bulk/absorption/float) */
   state?: string;
+  arrays?: SolarArrayConfig[];
+
+  // ---- weather (labeled value chips like Weatherglass sky details) ----
+  wind_speed?: string;
+  wind_bearing?: string;
+  wind_gust?: string;
+  precipitation?: string;
+  temp_inside?: string;
+  temp_outside?: string;
+  temp_water?: string;
+
+  // ---- forecast ----
+  /** weather.* entity providing the forecast */
+  weather?: string;
+  forecast_type?: ForecastType;
+  /** number of forecast steps in the strip (default 6 hourly / 7 daily) */
+  forecast_count?: number;
+
+  // ---- radar ----
+  provider?: 'windy' | 'rainviewer';
+  latitude?: number;
+  longitude?: number;
+  zoom?: number;
 
   // ---- fridge / camera share `switch` = the ESPHome actor that powers it ----
   switch?: string;

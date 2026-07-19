@@ -15,6 +15,13 @@ export interface HomeAssistant {
   language: string;
   locale?: { language: string; number_format?: string };
   themes?: Record<string, any>;
+  config?: { latitude?: number; longitude?: number };
+  connection?: {
+    subscribeMessage?<T>(
+      cb: (msg: T) => void,
+      msg: Record<string, unknown>
+    ): Promise<() => void>;
+  };
   callService(
     domain: string,
     service: string,

@@ -18,7 +18,8 @@ import { fmtState, fmtNumber, compass, joinUnit } from './format';
 import { t } from './i18n';
 import { sharedStyles, styleClass } from './styles';
 import { boatScene } from './boat-scene';
-import { SECTION_PRESETS } from './presets';
+import { SECTION_PRESETS, conditionIcon } from './presets';
+import { fetchForecast } from './forecast';
 import {
   fetchHistory,
   bucketDaily,
@@ -41,6 +42,10 @@ import {
   type Aggregate,
   type TrendMode,
   type DotDir,
+  type BatteryBankConfig,
+  type SolarArrayConfig,
+  type ForecastPoint,
+  type ForecastType,
 } from './types';
 
 import './editors';
@@ -72,6 +77,10 @@ export class BoatCard extends LitElement {
   @state() private _popup: number | null = null;
   @state() private _popupRange = 'week';
   @state() private _tileRanges: Record<number, string> = {};
+  @state() private _forecasts: Record<string, ForecastPoint[]> = {};
+  @state() private _fcRanges: Record<number, ForecastType> = {};
+  private _fcFetching = new Set<string>();
+  private _fcTime: Record<string, number> = {};
 
   private _cfgSig = '';
   private _stateSig = '';
@@ -121,6 +130,31 @@ export class BoatCard extends LitElement {
   protected updated(changed: PropertyValues): void {
     super.updated(changed);
     if (changed.has('hass') || changed.has('_config')) this._maybeFetch();
+    if (changed.has('hass') || changed.has('_config') || changed.has('_fcRanges'))
+      this._maybeFetchForecasts();
+  }
+
+  private _fcType(s: SectionConfig, i: number): ForecastType {
+    return this._fcRanges[i] ?? s.forecast_type ?? 'daily';
+  }
+
+  private _maybeFetchForecasts(): void {
+    if (!this.hass || !this._config) return;
+    this._config.sections.forEach((s, i) => {
+      if (s.type !== 'forecast' || !s.weather) return;
+      const type = this._fcType(s, i);
+      const key = `${s.weather}|${type}`;
+      const fresh = this._fcTime[key] && Date.now() - this._fcTime[key] < 15 * 60_000;
+      if (fresh || this._fcFetching.has(key)) return;
+      this._fcFetching.add(key);
+      fetchForecast(this.hass, s.weather, type)
+        .then((fc) => {
+          this._fcTime[key] = Date.now();
+          this._forecasts = { ...this._forecasts, [key]: fc };
+        })
+        .catch(() => undefined)
+        .finally(() => this._fcFetching.delete(key));
+    });
   }
 
   private _sectionSeries(s: SectionConfig): string[] {
@@ -133,10 +167,16 @@ export class BoatCard extends LitElement {
         if (s.entity2) ids.push(s.entity2);
         return ids;
       }
-      case 'battery':
+      case 'battery': {
+        if (s.banks?.length)
+          return s.banks.map((b) => b.soc).filter((x): x is string => !!x);
         return s.soc ? [s.soc] : [];
-      case 'solar':
+      }
+      case 'solar': {
+        if (s.arrays?.length)
+          return s.arrays.map((a) => a.power).filter((x): x is string => !!x);
         return s.power ? [s.power] : [];
+      }
       default:
         return [];
     }
@@ -248,6 +288,9 @@ export class BoatCard extends LitElement {
       case 'boat': body = this._renderBoat(s, i); break;
       case 'battery': body = this._renderBattery(s, i); break;
       case 'solar': body = this._renderSolar(s, i); break;
+      case 'weather': body = this._renderWeather(s); break;
+      case 'forecast': body = this._renderForecastTile(s, i); break;
+      case 'radar': body = this._renderRadar(s); break;
       case 'fridge': body = this._renderFridge(s); break;
       case 'camera': body = this._renderCamera(s); break;
       case 'grafana': body = this._renderGrafana(s); break;
@@ -353,7 +396,36 @@ export class BoatCard extends LitElement {
     </div>`;
   }
 
+  private _bankBlock(b: BatteryBankConfig, idx: number): TemplateResult {
+    const socSt = getEntity(this.hass, b.soc);
+    const soc = numeric(socSt);
+    const color = this._socColor(soc);
+    return html`<div class="bank">
+      <div class="bank-head">
+        <span class="bank-name">${b.name ?? `#${idx + 1}`}</span>
+        <span class="bank-val" style="color:${color}"
+          >${fmtState(this.hass, socSt, { unit: '%', precision: 0, unavailable: '—' })}</span
+        >
+      </div>
+      <div class="progress"><span style="width:${Math.max(0, Math.min(100, soc || 0))}%;--bar-color:${color}"></span></div>
+      <div class="kvs">
+        ${this._kvRow(b.voltage, t(this.hass, 'voltage'))}
+        ${this._kvRow(b.current, t(this.hass, 'current'))}
+        ${this._kvRow(b.power, t(this.hass, 'power_now'))}
+        ${this._kvRow(b.temperature, t(this.hass, 'temperature'))}
+        ${this._kvRow(b.time_remaining, '⌛')}
+      </div>
+    </div>`;
+  }
+
   private _renderBattery(s: SectionConfig, i: number): TemplateResult {
+    // multiple banks: stacked bank blocks + one shared multi-series chart
+    if (s.banks?.length) {
+      const banks = html`<div class="banks">
+        ${s.banks.map((b, k) => this._bankBlock(b, k))}
+      </div>`;
+      return this._valueTile(s, i, s.banks[0]?.soc, banks, nothing, this._sectionSeries(s), this._accent(s));
+    }
     const socSt = getEntity(this.hass, s.soc);
     const soc = numeric(socSt);
     const color = this._socColor(soc);
@@ -371,7 +443,33 @@ export class BoatCard extends LitElement {
     return this._valueTile(s, i, s.soc, value, extras, [s.soc ?? ''], color);
   }
 
+  private _arrayBlock(a: SolarArrayConfig, idx: number): TemplateResult {
+    const powerSt = getEntity(this.hass, a.power);
+    return html`<div class="bank">
+      <div class="bank-head">
+        <span class="bank-name">${a.name ?? `#${idx + 1}`}</span>
+        <span class="bank-val" style="color:var(--bc-solar)"
+          >${fmtState(this.hass, powerSt, { unit: 'W', precision: 0, unavailable: '—' })}</span
+        >
+      </div>
+      <div class="kvs">
+        ${this._kvRow(a.yield_today, t(this.hass, 'yield_today'))}
+        ${this._kvRow(a.voltage, t(this.hass, 'voltage'))}
+        ${this._kvRow(a.current, t(this.hass, 'current'))}
+        ${this._kvRow(a.state, t(this.hass, 'state'))}
+      </div>
+    </div>`;
+  }
+
   private _renderSolar(s: SectionConfig, i: number): TemplateResult {
+    // multiple arrays: stacked blocks + shared multi-series line chart
+    if (s.arrays?.length) {
+      const arrays = html`<div class="banks">
+        ${s.arrays.map((a, k) => this._arrayBlock(a, k))}
+      </div>`;
+      const multi: SectionConfig = { ...s, graph: s.graph ?? 'line' };
+      return this._valueTile(multi, i, s.arrays[0]?.power, arrays, nothing, this._sectionSeries(s), 'var(--bc-solar)');
+    }
     const powerSt = getEntity(this.hass, s.power);
     const value = powerSt
       ? html`<div class="value" style="color:var(--bc-solar)">${fmtState(this.hass, powerSt, { unit: 'W', precision: 0 })}</div>`
@@ -383,6 +481,141 @@ export class BoatCard extends LitElement {
       ${this._kvRow(s.state, t(this.hass, 'state'))}
     </div>`;
     return this._valueTile(s, i, s.power, value, extras, [s.power ?? ''], 'var(--bc-solar)');
+  }
+
+  // ==================== WEATHER ====================
+  private _wxChip(label: string, value: TemplateResult | string, sub?: string): TemplateResult {
+    return html`<div class="wx">
+      <div class="wx-label">${label}</div>
+      <div class="wx-value">${value}</div>
+      ${sub ? html`<div class="wx-sub">${sub}</div>` : nothing}
+    </div>`;
+  }
+
+  private _renderWeather(s: SectionConfig): TemplateResult {
+    const chips: TemplateResult[] = [];
+    const windSt = getEntity(this.hass, s.wind_speed);
+    if (windSt && !isUnavailable(windSt)) {
+      const bearing = numeric(getEntity(this.hass, s.wind_bearing));
+      const gustSt = getEntity(this.hass, s.wind_gust);
+      const arrow = Number.isFinite(bearing)
+        ? html`<ha-icon icon="mdi:navigation" style="transform:rotate(${(bearing + 180) % 360}deg)"></ha-icon>`
+        : nothing;
+      const dir = Number.isFinite(bearing) ? compass(bearing) : '';
+      chips.push(
+        this._wxChip(
+          t(this.hass, 'wind'),
+          html`${arrow}${fmtState(this.hass, windSt, { precision: 0 })}${dir ? ` ${dir}` : ''}`,
+          gustSt && !isUnavailable(gustSt)
+            ? `${t(this.hass, 'gusts')} ${fmtState(this.hass, gustSt, { precision: 0 })}`
+            : undefined
+        )
+      );
+    }
+    const add = (id: string | undefined, labelKey: string, precision = 1) => {
+      const st = getEntity(this.hass, id);
+      if (!st || isUnavailable(st)) return;
+      chips.push(this._wxChip(t(this.hass, labelKey), fmtState(this.hass, st, { precision })));
+    };
+    add(s.precipitation, 'precipitation');
+    add(s.temp_inside, 'inside');
+    add(s.temp_outside, 'outside');
+    add(s.temp_water, 'water_temp');
+    return html`
+      ${this._tileHead(s)}
+      ${chips.length
+        ? html`<div class="wx-grid">${chips}</div>`
+        : html`<div class="missing">${t(this.hass, 'unavailable')}</div>`}
+    `;
+  }
+
+  // ==================== FORECAST ====================
+  private _renderForecastTile(s: SectionConfig, i: number): TemplateResult {
+    if (!s.weather) return html`${this._tileHead(s)}<div class="missing">${t(this.hass, 'no_weather')}</div>`;
+    const type = this._fcType(s, i);
+    const points = this._forecasts[`${s.weather}|${type}`] ?? [];
+    const count = s.forecast_count ?? (type === 'hourly' ? 6 : 7);
+    const steps = points.slice(0, count);
+    const loc = this.hass.locale?.language ?? this.hass.language ?? 'de';
+    const label = (p: ForecastPoint, first: boolean): string => {
+      const d = new Date(p.datetime);
+      if (type === 'hourly') return first ? t(this.hass, 'now') : `${d.getHours()}`;
+      return d.toLocaleDateString(loc, { weekday: 'short' });
+    };
+    return html`
+      ${this._tileHead(
+        s,
+        html`<div class="periods">
+          ${(['hourly', 'daily'] as ForecastType[]).map(
+            (ft) => html`<button
+              class="period ${type === ft ? 'active' : ''}"
+              @click=${(e: Event) => {
+                e.stopPropagation();
+                this._fcRanges = { ...this._fcRanges, [i]: ft };
+              }}
+            >
+              ${t(this.hass, ft === 'hourly' ? 'forecast_hourly' : 'forecast_daily')}
+            </button>`
+          )}
+        </div>`
+      )}
+      ${steps.length
+        ? html`<div class="fc-strip">
+            ${steps.map((p, k) => {
+              const isDay = p.is_daytime ?? true;
+              const prob = p.precipitation_probability;
+              const chip =
+                typeof prob === 'number' && prob >= 5
+                  ? html`<span class="fc-pop">${fmtNumber(this.hass, prob, 0)}%</span>`
+                  : typeof p.precipitation === 'number' && p.precipitation >= 0.2
+                    ? html`<span class="fc-pop">${fmtNumber(this.hass, p.precipitation, 1)}</span>`
+                    : html`<span class="fc-pop empty"></span>`;
+              return html`<div class="fc-step">
+                <span class="fc-when">${label(p, k === 0)}</span>
+                <ha-icon class="fc-ico" .icon=${conditionIcon(p.condition, isDay)}></ha-icon>
+                ${chip}
+                <span class="fc-temp">
+                  ${typeof p.temperature === 'number' ? html`${fmtNumber(this.hass, p.temperature, 0)}°` : '–'}
+                  ${type === 'daily' && typeof p.templow === 'number'
+                    ? html`<span class="fc-lo">${fmtNumber(this.hass, p.templow, 0)}°</span>`
+                    : nothing}
+                </span>
+              </div>`;
+            })}
+          </div>`
+        : html`<div class="missing">…</div>`}
+    `;
+  }
+
+  // ==================== RADAR ====================
+  /** iframe URL for the embedded live radar map (from Weatherglass). */
+  private _radarUrl(s: SectionConfig): string {
+    if (s.url) return s.url;
+    const lat = s.latitude ?? this.hass.config?.latitude ?? 51.163;
+    const lon = s.longitude ?? this.hass.config?.longitude ?? 10.447;
+    const zoom = s.zoom ?? 8;
+    if (s.provider === 'rainviewer') {
+      return (
+        `https://www.rainviewer.com/map.html?loc=${lat},${lon},${zoom}` +
+        '&oCS=1&c=3&o=83&lm=0&layer=radar&sm=1&sn=1&hu=0'
+      );
+    }
+    return (
+      `https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}` +
+      `&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}` +
+      '&level=surface&overlay=radar&product=radar&menu=&message=&marker=true' +
+      '&calendar=now&type=map&location=coordinates' +
+      '&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1'
+    );
+  }
+
+  private _renderRadar(s: SectionConfig): TemplateResult {
+    return html`
+      ${this._tileHead(s)}
+      <div class="radarframe">
+        <iframe src=${this._radarUrl(s)} title=${this._name(s)} loading="lazy" allow="fullscreen"></iframe>
+      </div>
+    `;
   }
 
   private _renderSensor(s: SectionConfig, i: number): TemplateResult {

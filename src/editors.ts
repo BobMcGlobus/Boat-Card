@@ -70,12 +70,29 @@ const LABELS: Record<string, string> = {
   graph: 'Diagramm',
   days: 'Zeitraum (Tage)',
   trend: 'Trend-Pfeil',
+  wind_speed: 'Windstärke',
+  wind_bearing: 'Windrichtung (°)',
+  wind_gust: 'Böen',
+  precipitation: 'Niederschlag',
+  temp_inside: 'Temperatur innen',
+  temp_outside: 'Temperatur außen',
+  temp_water: 'Wassertemperatur',
+  weather: 'Wetter-Entität',
+  forecast_type: 'Vorhersage-Art',
+  forecast_count: 'Anzahl Schritte',
+  provider: 'Anbieter',
+  latitude: 'Breitengrad',
+  longitude: 'Längengrad',
+  zoom: 'Zoom',
 };
 
 const SECTION_LABEL: Record<SectionType, string> = {
   boat: 'Boot (Bild + Chips)',
   battery: 'Batterie',
   solar: 'Solar',
+  weather: 'Wetter',
+  forecast: 'Wetter-Vorhersage',
+  radar: 'Wetter-Radar',
   fridge: 'Kühlschrank',
   camera: 'Kamera',
   grafana: 'Grafana',
@@ -286,6 +303,63 @@ export class BoatCardEditor extends LitElement {
           { type: 'grid', name: '', schema: [sensor('voltage'), sensor('current')] },
           ...CHART_FIELDS,
         ];
+      case 'weather':
+        return [
+          ...common,
+          { type: 'grid', name: '', schema: [sensor('wind_speed'), sensor('wind_bearing')] },
+          { type: 'grid', name: '', schema: [sensor('wind_gust'), sensor('precipitation')] },
+          { type: 'grid', name: '', schema: [sensor('temp_inside'), sensor('temp_outside')] },
+          sensor('temp_water'),
+        ];
+      case 'forecast':
+        return [
+          ...common,
+          ent('weather', 'weather'),
+          {
+            type: 'grid',
+            name: '',
+            schema: [
+              {
+                name: 'forecast_type',
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'daily', label: 'Täglich' },
+                      { value: 'hourly', label: 'Stündlich' },
+                    ],
+                  },
+                },
+              },
+              { name: 'forecast_count', selector: { number: { min: 3, max: 12, mode: 'box' } } },
+            ],
+          },
+        ];
+      case 'radar':
+        return [
+          ...common,
+          {
+            type: 'grid',
+            name: '',
+            schema: [
+              {
+                name: 'provider',
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      { value: 'windy', label: 'Windy' },
+                      { value: 'rainviewer', label: 'RainViewer' },
+                    ],
+                  },
+                },
+              },
+              { name: 'zoom', selector: { number: { min: 4, max: 14, mode: 'box' } } },
+            ],
+          },
+          { type: 'grid', name: '', schema: [num('latitude', -90, 90), num('longitude', -180, 180)] },
+          text('url'),
+        ];
       case 'fridge':
         return [
           ...common,
@@ -343,6 +417,12 @@ export class BoatCardEditor extends LitElement {
     ev.stopPropagation();
     const sections = this._sections();
     sections[i] = { ...sections[i], controls: ev.detail.value };
+    this._commit(sections);
+  }
+  private _listChanged(ev: CustomEvent, i: number, key: 'banks' | 'arrays'): void {
+    ev.stopPropagation();
+    const sections = this._sections();
+    sections[i] = { ...sections[i], [key]: ev.detail.value };
     this._commit(sections);
   }
   private _addSection(ev: Event): void {
@@ -420,6 +500,32 @@ export class BoatCardEditor extends LitElement {
               .computeLabel=${this._label}
               @value-changed=${(e: CustomEvent) => this._sectionChanged(e, i)}
             ></ha-form>
+            ${s.type === 'battery'
+              ? html`
+                  <div class="sub-title">Batterien (mehrere)</div>
+                  <div class="sub-sub">Leer lassen = die einzelnen Felder oben nutzen.</div>
+                  <boat-items-editor
+                    .hass=${this.hass}
+                    .items=${s.banks ?? []}
+                    .fields=${BANK_FIELDS}
+                    addLabel="Batterie hinzufügen"
+                    @value-changed=${(e: CustomEvent) => this._listChanged(e, i, 'banks')}
+                  ></boat-items-editor>
+                `
+              : nothing}
+            ${s.type === 'solar'
+              ? html`
+                  <div class="sub-title">Solarmodule (mehrere)</div>
+                  <div class="sub-sub">Leer lassen = die einzelnen Felder oben nutzen.</div>
+                  <boat-items-editor
+                    .hass=${this.hass}
+                    .items=${s.arrays ?? []}
+                    .fields=${ARRAY_FIELDS}
+                    addLabel="Modul hinzufügen"
+                    @value-changed=${(e: CustomEvent) => this._listChanged(e, i, 'arrays')}
+                  ></boat-items-editor>
+                `
+              : nothing}
             ${s.type === 'boat'
               ? html`
                   <div class="sub-title">Chips auf dem Boot</div>
@@ -528,4 +634,47 @@ const CONTROL_FIELDS = [
     ],
   },
   { name: 'icon_on', selector: { icon: {} } },
+];
+
+const BANK_FIELDS = [
+  { name: 'name', selector: { text: {} } },
+  { name: 'soc', selector: { entity: { domain: 'sensor' } } },
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      { name: 'voltage', selector: { entity: { domain: 'sensor' } } },
+      { name: 'current', selector: { entity: { domain: 'sensor' } } },
+    ],
+  },
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      { name: 'power', selector: { entity: { domain: 'sensor' } } },
+      { name: 'temperature', selector: { entity: { domain: 'sensor' } } },
+    ],
+  },
+  { name: 'time_remaining', selector: { entity: { domain: 'sensor' } } },
+];
+
+const ARRAY_FIELDS = [
+  { name: 'name', selector: { text: {} } },
+  { name: 'power', selector: { entity: { domain: 'sensor' } } },
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      { name: 'yield_today', selector: { entity: { domain: 'sensor' } } },
+      { name: 'state', selector: { entity: {} } },
+    ],
+  },
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      { name: 'voltage', selector: { entity: { domain: 'sensor' } } },
+      { name: 'current', selector: { entity: { domain: 'sensor' } } },
+    ],
+  },
 ];

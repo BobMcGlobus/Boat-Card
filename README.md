@@ -115,8 +115,9 @@ Position (`x`/`y` = Prozent, `dot` = Label-Richtung) **je Ansicht**. Fehlt eine
 Ansicht, greift `x`/`y`/`dot` direkt am Chip; `hidden: true` blendet den Chip in
 einer Ansicht aus.
 
-### `battery`
+### `battery` — eine oder mehrere Batterien
 ```yaml
+# einzelne Batterie (flache Felder):
 - type: battery
   name: Hauptbatterie
   soc: sensor.main_battery_soc         # Balken färbt grün/gelb/rot
@@ -125,16 +126,59 @@ einer Ansicht aus.
   power: sensor.main_battery_power
   temperature: sensor.main_battery_temp
   time_remaining: sensor.main_battery_ttg
+
+# mehrere Batterien in einer Kachel (gemeinsamer Mehrlinien-Chart):
+- type: battery
+  name: Batterien
+  banks:
+    - { name: Hauptbatterie, soc: sensor.main_battery_soc, voltage: sensor.main_battery_voltage }
+    - { name: Motorbatterie, soc: sensor.motor_battery_soc, voltage: sensor.motor_battery_voltage }
 ```
 
-### `solar` (Victron)
+### `solar` — ein oder mehrere Module (Victron)
 ```yaml
+# einzelnes Modul:
 - type: solar
   name: Solar Hauptmodul
   power: sensor.victron_main_pv_power
   yield_today: sensor.victron_main_yield_today
   voltage: sensor.victron_main_pv_voltage
   state: sensor.victron_main_charger_state   # bulk/absorption/float
+
+# mehrere Module in einer Kachel:
+- type: solar
+  name: Solar
+  arrays:
+    - { name: Hauptmodul, power: sensor.victron_main_pv_power, yield_today: sensor.victron_main_yield_today }
+    - { name: Zweitmodul, power: sensor.victron_second_pv_power }
+```
+
+### `weather` — Wetter-Chips (Weatherglass-Optik)
+```yaml
+- type: weather
+  wind_speed: sensor.wittboy_wind_speed
+  wind_bearing: sensor.wittboy_wind_direction   # Grad; dreht den Pfeil, zeigt N/SW/…
+  wind_gust: sensor.wittboy_wind_gust
+  precipitation: sensor.wittboy_rain_today
+  temp_inside: sensor.cabin_temperature
+  temp_outside: sensor.wittboy_temperature
+  temp_water: sensor.water_temperature
+```
+
+### `forecast` — Vorhersage-Streifen
+```yaml
+- type: forecast
+  weather: weather.home       # weather.*-Entität
+  forecast_type: daily        # daily | hourly (umschaltbar per Pills)
+  forecast_count: 7
+```
+
+### `radar` — Live-Wetterradar
+```yaml
+- type: radar
+  provider: windy             # windy (Default) | rainviewer
+  zoom: 9
+  # latitude/longitude: Default = HA-Home-Koordinaten; url: eigene Karte
 ```
 
 ### `fridge`
