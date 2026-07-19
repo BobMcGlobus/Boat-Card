@@ -4,6 +4,13 @@ import type { HomeAssistant } from './ha';
 type Dict = Record<string, string>;
 
 const DE: Dict = {
+  range_day: 'Tag',
+  range_week: 'Woche',
+  range_month: 'Monat',
+  stat_min: 'Min',
+  stat_avg: 'Ø',
+  stat_max: 'Max',
+  stat_trend: 'Trend',
   boat: 'Boot',
   sensor: 'Sensor',
   state: 'Zustand',
@@ -46,6 +53,13 @@ const DE: Dict = {
 };
 
 const EN: Dict = {
+  range_day: 'Day',
+  range_week: 'Week',
+  range_month: 'Month',
+  stat_min: 'Min',
+  stat_avg: 'Avg',
+  stat_max: 'Max',
+  stat_trend: 'Trend',
   boat: 'Boat',
   sensor: 'Sensor',
   state: 'State',

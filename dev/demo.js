@@ -44,7 +44,25 @@ const hass = () => ({
     'select.mast_ptz_preset': s('select.mast_ptz_preset','Steg',{options:['Steg','Cockpit','Bug']}),
   },
   callService: (...a)=>{ console.log('callService',a); return Promise.resolve(); },
-  callWS: ()=>Promise.resolve({}),
+  callWS: (msg)=>{
+    // fake recorder history: a plausible wavy curve per requested entity
+    if (msg && msg.type === 'history/history_during_period') {
+      const start = new Date(msg.start_time).getTime() / 1000;
+      const end = new Date(msg.end_time).getTime() / 1000;
+      const out = {};
+      (msg.entity_ids || []).forEach((id, k) => {
+        const base = { 'sensor.battery_soc':70, 'sensor.motor_battery_soc':60, 'sensor.solar_power':18, 'sensor.solar_main_power':18, 'sensor.water_temperature':17 }[id] ?? 20;
+        const pts = [];
+        for (let t = start; t <= end; t += 3600) {
+          const day = (t / 86400) | 0;
+          pts.push({ s: String(base + Math.sin(t/43200 + k) * base*0.18 + Math.sin(day + k) * base*0.08), lu: t });
+        }
+        out[id] = pts;
+      });
+      return Promise.resolve(out);
+    }
+    return Promise.resolve({});
+  },
 });
 
 const sections = [
@@ -69,7 +87,7 @@ const sections = [
   { type:'camera', camera:'camera.mast', switch:'switch.camera_power', ptz:true, presets:'select.mast_ptz_preset' },
 ];
 
-const STYLES = ['withings','default','glass','material','bubble','mirror'];
+const STYLES = ['default','glass','material','bubble','mirror'];
 const app = document.getElementById('app');
 const cards = [];
 for (const style of STYLES) {

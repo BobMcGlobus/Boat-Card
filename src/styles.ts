@@ -1,9 +1,9 @@
 import { css } from 'lit';
 import { CARD_STYLES, type CardStyle } from './types';
 
-/** Validate + map a card_style to its host class (default: withings). */
+/** Validate + map a card_style to its host class (default: soft base). */
 export function styleClass(style?: CardStyle): string {
-  const s = style && CARD_STYLES.includes(style) ? style : 'withings';
+  const s = style && CARD_STYLES.includes(style) ? style : 'default';
   return `s-${s}`;
 }
 
@@ -40,16 +40,7 @@ export const sharedStyles = css`
 
   /* ---- card styles (descendant selectors so tiles + popups match) ---- */
 
-  /* default: plain HA look following the active theme */
-  .s-default {
-    --bc-tile-bg: var(
-      --secondary-background-color,
-      color-mix(in srgb, var(--primary-text-color) 5%, var(--bc-card-bg))
-    );
-    --bc-dot-fill: var(--secondary-background-color, var(--bc-card-bg));
-    --bc-tile-radius: var(--ha-card-border-radius, 12px);
-  }
-  /* withings: soft tinted tiles = base tokens, nothing extra */
+  /* default: soft tinted tiles = the base tokens (nothing extra needed) */
 
   /* liquid glass: translucent, blurred, specular edge */
   .s-glass {
@@ -280,6 +271,78 @@ export const sharedStyles = css`
     color: var(--secondary-text-color);
   }
   .missing {
+    font-size: 13px;
+    color: var(--secondary-text-color);
+  }
+
+  /* ---- value tile: value + trend + mini chart ---- */
+  .tile-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .tile-inner.clickable {
+    cursor: pointer;
+  }
+  .time {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+    flex: none;
+  }
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: 14px;
+    align-items: center;
+  }
+  .body.stack {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+  .trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-weight: 600;
+  }
+  .trend.up {
+    color: var(--bc-battery);
+  }
+  .trend.down {
+    color: var(--bc-danger);
+  }
+  .trend.flat {
+    color: var(--secondary-text-color);
+  }
+  .chartcell {
+    min-width: 0;
+  }
+  .chart {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+  .chart .axis {
+    font-size: 8px;
+    fill: var(--secondary-text-color);
+  }
+  .secondary-vals {
     font-size: 13px;
     color: var(--secondary-text-color);
   }
@@ -667,5 +730,105 @@ export const sharedStyles = css`
     border-radius: 10px;
     background: #0b0f19;
     display: block;
+  }
+
+  /* ---- detail popup ---- */
+  .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 16px;
+  }
+  .dialog {
+    width: min(560px, 94vw);
+    max-height: 88vh;
+    overflow: auto;
+    box-sizing: border-box;
+    background: var(--bc-card-bg);
+    color: var(--primary-text-color);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
+  }
+  .s-glass .dialog {
+    background: color-mix(in srgb, var(--bc-card-bg) 60%, transparent);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    backdrop-filter: blur(24px) saturate(1.5);
+    border: 1px solid color-mix(in srgb, #fff 25%, transparent);
+  }
+  .s-mirror .dialog {
+    background: #000;
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+  }
+  .dialog-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .dialog-title {
+    font-size: 20px;
+    font-weight: 700;
+    flex: 1;
+  }
+  .close {
+    border: none;
+    background: var(--bc-tile-bg);
+    color: inherit;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+  .ranges {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .range {
+    border: none;
+    background: var(--bc-tile-bg);
+    color: var(--secondary-text-color);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+  }
+  .range.on {
+    background: var(--bc-accent);
+    color: #fff;
+  }
+  .bigchart {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .stat-tile {
+    background: var(--bc-tile-bg);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-text-color);
   }
 `;

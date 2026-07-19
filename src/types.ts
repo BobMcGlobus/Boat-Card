@@ -2,24 +2,32 @@
 // Home Assistant Lovelace card (same shape as HealthCard / Weatherglass):
 // one card, a list of typed sections, the same card styles.
 
-export type CardStyle =
-  | 'default'
-  | 'withings'
-  | 'glass'
-  | 'material'
-  | 'bubble'
-  | 'mirror';
+// Same style set as Weatherglass (withings is exclusive to HealthCard):
+// default = the soft tinted base look.
+export type CardStyle = 'default' | 'glass' | 'material' | 'bubble' | 'mirror';
 
 export const CARD_STYLES: CardStyle[] = [
   'default',
-  'withings',
   'glass',
   'material',
   'bubble',
   'mirror',
 ];
 
-export type TapAction = 'more-info' | 'toggle' | 'link' | 'none';
+/** popup = built-in detail popup, more-info = native HA dialog */
+export type TapAction = 'popup' | 'more-info' | 'toggle' | 'link' | 'none';
+
+export type GraphType = 'line' | 'bar' | 'progress' | 'none';
+export type Aggregate = 'mean' | 'min' | 'max' | 'last' | 'sum';
+export type TrendMode = 'up_good' | 'down_good' | 'neutral' | 'none';
+
+/** A single data series (for multi-series tiles). */
+export interface SeriesConfig {
+  entity: string;
+  name?: string;
+  color?: string;
+  unit?: string;
+}
 
 /** The three graphical states of the boat. */
 export type BoatVariant = 'dock' | 'sailing' | 'trailer';
@@ -163,15 +171,34 @@ export interface SectionConfig {
   auto_params?: boolean;
   show_open?: boolean;
 
-  // ---- sensor (generic value tile) ----
+  // ---- value tiles (sensor / battery / solar) ----
   entity?: string;
   entity2?: string;
+  /** multiple series in one tile (chips + shared chart) */
+  entities?: (string | SeriesConfig)[];
+  /** extra entities shown small under the value */
+  secondary?: string[];
   unit?: string;
   precision?: number;
   attribute?: string;
   tap_action?: TapAction;
   link?: string;
+  /** per-tile mini chart: line (default) | bar | progress | none */
+  graph?: GraphType;
+  /** history window in days for the tile chart/trend (default 7) */
+  days?: number;
+  /** how history buckets are aggregated (default mean) */
+  aggregate?: Aggregate;
+  /** trend arrow direction meaning (default neutral) */
+  trend?: TrendMode;
+  /** target for a progress graph (number or entity id) */
+  goal?: number | string;
+  /** show the detail popup inline on the tile */
+  expanded?: boolean;
 }
+
+/** Popup detail time ranges. */
+export type RangeKind = 'hour' | 'day' | 'month';
 
 export interface BoatCardConfig {
   type: string;

@@ -10,7 +10,7 @@ Die Boot-Sektion ist das grafische Herzstück (Boot am Steg / unter Segeln / auf
 dem Anhänger) mit frei platzierbaren **Chips**; alle weiteren Sektionen sind
 Kacheln für Batterie, Solar, Kühlschrank, Kamera, Grafana oder beliebige Sensoren.
 
-![one card, six styles](https://github.com/BobMcGlobus/Boat-Card)
+
 
 ---
 
@@ -25,14 +25,22 @@ Kacheln für Batterie, Solar, Kühlschrank, Kamera, Grafana oder beliebige Senso
 
 ---
 
+## Features (das HealthCard/Weatherglass-Konzept)
+
+- 🧩 **Kacheln in der Karte**: jede Sektion ist eine Kachel im Grid — Boot-Hero, Batterie, Solar, Kühlschrank, Kamera, Grafana, beliebige Sensoren
+- 📈 **Mini-Chart pro Wert-Kachel** aus der Recorder-History (Linie/Balken, `days` konfigurierbar)
+- ↗️ **Trend-Pfeile** (steigend/fallend gut/schlecht konfigurierbar)
+- 🔍 **Detail-Popup**: Klick auf eine Kachel öffnet großen Verlauf mit **Tag / Woche / Monat** und Min/Ø/Max/Trend
+- 🎠 **Carousel-Layout** (`layout: carousel`): alle Kacheln horizontal wischbar mit Scroll-Snap
+- 🌗 100 % Theme-Support über HA-Theme-Variablen
+
 ## Styles
 
-Wie HealthCard, per `card_style`:
+Wie Weatherglass, per `card_style` (der Withings-Stil bleibt exklusiv bei der HealthCard):
 
 | Wert | Look |
 |------|------|
-| `withings` | Weicher, getönter Standard (Default) |
-| `default` | Schlichtes HA-Theme |
+| `default` | Weicher, getönter Standard (Default) |
 | `glass` | Liquid Glass (durchscheinend, Blur) |
 | `material` | Material You (tonale Kacheln) |
 | `bubble` | Frei schwebende Module |
@@ -45,7 +53,7 @@ Wie HealthCard, per `card_style`:
 ```yaml
 type: custom:boat-card
 title: Hoppetosse
-card_style: withings      # withings | default | glass | material | bubble | mirror
+card_style: default       # default | glass | material | bubble | mirror
 columns: 2                # Spalten fürs Kachel-Grid (Boot/Kamera/Grafana sind voll breit)
 sections:
   - type: boat
@@ -192,12 +200,12 @@ eigene Bilder zeichnet die Karte ein eingebautes SVG-Boot.
 
 ```bash
 npm install
-npm run dev       # Galerie (6 Styles): http://localhost:5173/
+npm run dev       # Galerie (5 Styles): http://localhost:5173/
                   # Editor-Vorschau:     http://localhost:5173/editor.html
 npm run build     # -> dist/boat-card.js
 npx tsc --noEmit  # Typecheck
 ```
 
-Stack: TypeScript + Lit + Vite, gebündelt in eine Datei. Getestet: alle 6 Styles,
-mehrfacher Re-Render (`hass`-Update-Pfad), visueller Chip-Editor (Drag,
+Stack: TypeScript + Lit + Vite, gebündelt in eine Datei. Getestet: alle 5 Styles,
+Mini-Charts + Popup (Recorder-Mock), Carousel, visueller Chip-Editor (Drag,
 Hinzufügen/Löschen, WYSIWYG-Anker), Sektions-Verwaltung.

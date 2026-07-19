@@ -88,7 +88,7 @@ const hass = {
 };
 
 let config = {
-  type:'custom:boat-card', title:'Hoppetosse', card_style:'withings', columns:2,
+  type:'custom:boat-card', title:'Hoppetosse', card_style:'default', columns:2,
   sections: [
     { type:'boat', variant:'dock', show_variant_switch:true,
       chips: [

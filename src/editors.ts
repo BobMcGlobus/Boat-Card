@@ -66,6 +66,9 @@ const LABELS: Record<string, string> = {
   precision: 'Nachkommastellen',
   attribute: 'Attribut',
   tap_action: 'Tippen',
+  graph: 'Diagramm',
+  days: 'Zeitraum (Tage)',
+  trend: 'Trend-Pfeil',
 };
 
 const SECTION_LABEL: Record<SectionType, string> = {
@@ -96,8 +99,7 @@ const STYLE_SELECT = {
     select: {
       mode: 'dropdown',
       options: [
-        { value: 'withings', label: 'Withings (Standard)' },
-        { value: 'default', label: 'HA-Standard' },
+        { value: 'default', label: 'Standard' },
         { value: 'glass', label: 'Liquid Glass' },
         { value: 'material', label: 'Material You' },
         { value: 'bubble', label: 'Bubble' },
@@ -106,6 +108,63 @@ const STYLE_SELECT = {
     },
   },
 };
+
+/** Chart/behaviour fields shared by the value tiles (battery, solar, sensor). */
+const CHART_FIELDS = [
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      {
+        name: 'graph',
+        selector: {
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'line', label: 'Linie' },
+              { value: 'bar', label: 'Balken' },
+              { value: 'none', label: 'Kein Chart' },
+            ],
+          },
+        },
+      },
+      { name: 'days', selector: { number: { min: 1, max: 31, mode: 'box' } } },
+    ],
+  },
+  {
+    type: 'grid',
+    name: '',
+    schema: [
+      {
+        name: 'trend',
+        selector: {
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'up_good', label: 'Steigend = gut' },
+              { value: 'down_good', label: 'Fallend = gut' },
+              { value: 'neutral', label: 'Neutral' },
+              { value: 'none', label: 'Kein Trend' },
+            ],
+          },
+        },
+      },
+      {
+        name: 'tap_action',
+        selector: {
+          select: {
+            mode: 'dropdown',
+            options: [
+              { value: 'popup', label: 'Detail-Popup' },
+              { value: 'more-info', label: 'Info-Dialog' },
+              { value: 'none', label: 'Nichts' },
+            ],
+          },
+        },
+      },
+    ],
+  },
+];
 
 @customElement('boat-card-editor')
 export class BoatCardEditor extends LitElement {
@@ -215,6 +274,7 @@ export class BoatCardEditor extends LitElement {
           { type: 'grid', name: '', schema: [sensor('voltage'), sensor('current')] },
           { type: 'grid', name: '', schema: [sensor('power'), sensor('temperature')] },
           sensor('time_remaining'),
+          ...CHART_FIELDS,
         ];
       case 'solar':
         return [
@@ -222,6 +282,7 @@ export class BoatCardEditor extends LitElement {
           sensor('power'),
           { type: 'grid', name: '', schema: [sensor('yield_today'), ent('state')] },
           { type: 'grid', name: '', schema: [sensor('voltage'), sensor('current')] },
+          ...CHART_FIELDS,
         ];
       case 'fridge':
         return [
@@ -251,26 +312,8 @@ export class BoatCardEditor extends LitElement {
           ent('entity'),
           ent('entity2'),
           { type: 'grid', name: '', schema: [text('unit'), num('precision', 0, 4)] },
-          {
-            type: 'grid',
-            name: '',
-            schema: [
-              text('attribute'),
-              {
-                name: 'tap_action',
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      { value: 'more-info', label: 'Info-Dialog' },
-                      { value: 'toggle', label: 'Schalten' },
-                      { value: 'none', label: 'Nichts' },
-                    ],
-                  },
-                },
-              },
-            ],
-          },
+          text('attribute'),
+          ...CHART_FIELDS,
         ];
     }
   }
