@@ -98,7 +98,10 @@ Jede Sektion hat `type`, optional `name`, `icon`, `color` (Akzent) und
   gps:
     speed: sensor.boat_speed
     heading: sensor.boat_heading
-    location: device_tracker.boat   # lat/lon aus Attributen (oder lat:/lon: Sensoren)
+    location: device_tracker.boat   # lat/lon aus Attributen — oder eigene Sensoren:
+    # lat: sensor.gps_latitude
+    # lon: sensor.gps_longitude
+    altitude: sensor.gps_altitude   # optional: Höhe in der GPS-Zeile
     speed_unit: kn
   controls:                     # ESPHome-Aktoren als Toggle-Reihe
     - { entity: switch.fridge, icon: mdi:fridge-outline, name: Kühlung }
