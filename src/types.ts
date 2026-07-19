@@ -84,8 +84,11 @@ export interface GpsConfig {
   speed?: string;
   heading?: string;
   location?: string;
+  /** separate coordinate sensors (e.g. a GPS module's own entities) */
   lat?: string;
   lon?: string;
+  /** altitude sensor */
+  altitude?: string;
   speed_unit?: string;
 }
 

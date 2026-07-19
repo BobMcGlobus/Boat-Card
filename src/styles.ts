@@ -55,9 +55,8 @@ export const sharedStyles = css`
   }
   .s-glass .metric {
     border: 1px solid color-mix(in srgb, var(--primary-text-color) 12%, transparent);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent),
-      0 8px 24px color-mix(in srgb, #000 10%, transparent);
+    /* no outer drop shadow — it reads as dark bands between stacked tiles */
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
     -webkit-backdrop-filter: blur(18px) saturate(1.5);
     backdrop-filter: blur(18px) saturate(1.5);
   }
@@ -178,7 +177,7 @@ export const sharedStyles = css`
   }
   .metrics {
     display: grid;
-    grid-template-columns: repeat(var(--bc-columns, 2), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--bc-columns, 1), minmax(0, 1fr));
     gap: 12px;
   }
   .cardroot.flat .metrics {
@@ -381,7 +380,8 @@ export const sharedStyles = css`
   .stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 41 / 24;
+    /* taller hero stage — the boat image is the centerpiece of the card */
+    aspect-ratio: 41 / 32;
   }
   .scene {
     position: absolute;

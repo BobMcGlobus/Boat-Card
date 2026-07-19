@@ -35,6 +35,7 @@ const hass = () => ({
     'sensor.water_temperature': s('sensor.water_temperature',18.2,{unit_of_measurement:'°C',friendly_name:'Wasser'}),
     'sensor.boat_speed': s('sensor.boat_speed',4.2,{unit_of_measurement:'kn'}),
     'sensor.boat_heading': s('sensor.boat_heading',118,{unit_of_measurement:'°'}),
+    'sensor.boat_altitude': s('sensor.boat_altitude',214,{unit_of_measurement:'m'}),
     'device_tracker.boat': s('device_tracker.boat','not_home',{latitude:51.3705,longitude:7.4523}),
     'switch.fridge': s('switch.fridge','on',{friendly_name:'Kühlschrank'}),
     'switch.depth_sounder': s('switch.depth_sounder','off',{friendly_name:'Echolot'}),
@@ -72,7 +73,7 @@ const sections = [
       { entity:'sensor.battery_soc', icon:'mdi:battery', color:'green', positions:{ dock:{x:40,y:66,dot:'right'} } },
       { entity:'sensor.water_temperature', icon:'mdi:coolant-temperature', color:'light-blue', positions:{ dock:{x:22,y:78,dot:'top-right'} } },
     ],
-    gps:{ speed:'sensor.boat_speed', heading:'sensor.boat_heading', location:'device_tracker.boat' },
+    gps:{ speed:'sensor.boat_speed', heading:'sensor.boat_heading', location:'device_tracker.boat', altitude:'sensor.boat_altitude' },
     controls:[
       { entity:'switch.fridge', icon:'mdi:fridge-outline', name:'Kühlung' },
       { entity:'switch.depth_sounder', icon:'mdi:altimeter', name:'Echolot' },
@@ -97,7 +98,7 @@ for (const style of STYLES) {
   label.className = 'label';
   label.textContent = 'card_style: ' + style;
   const card = document.createElement('boat-card');
-  card.setConfig({ type:'custom:boat-card', title:'Hoppetosse', card_style:style, columns:2, sections });
+  card.setConfig({ type:'custom:boat-card', title:'Hoppetosse', card_style:style, sections });
   card.hass = hass();
   wrap.appendChild(label); wrap.appendChild(card);
   app.appendChild(wrap);

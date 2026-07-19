@@ -100,7 +100,6 @@ export class BoatCard extends LitElement {
       type: 'custom:boat-card',
       title: 'Hoppetosse',
       card_style: 'default',
-      columns: 2,
       sections: [
         {
           type: 'boat',
@@ -229,7 +228,7 @@ export class BoatCard extends LitElement {
             ${c.subtitle ? html`<div class="subtitle">${c.subtitle}</div>` : nothing}
           </div>`
         : nothing}
-      <div class="metrics ${c.layout === 'carousel' ? 'carousel' : ''}" style="--bc-columns:${c.columns ?? 2}">
+      <div class="metrics ${c.layout === 'carousel' ? 'carousel' : ''}" style="--bc-columns:${c.columns ?? 1}">
         ${(c.sections ?? []).map((s, i) => this._renderSection(s, i))}
       </div>
     `;
@@ -498,6 +497,9 @@ export class BoatCard extends LitElement {
     }
     const coord = this._coords(g);
     if (coord) parts.push(html`<span class="gps-item"><ha-icon icon="mdi:map-marker"></ha-icon>${coord}</span>`);
+    const altSt = getEntity(this.hass, g.altitude);
+    if (altSt && !isUnavailable(altSt))
+      parts.push(html`<span class="gps-item"><ha-icon icon="mdi:altimeter"></ha-icon>${fmtState(this.hass, altSt, { precision: 0 })}</span>`);
     return parts.length ? html`<div class="gps-bar">${parts}</div>` : nothing;
   }
 

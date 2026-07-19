@@ -446,7 +446,8 @@ export class BoatChipsEditor extends LitElement {
     .ce-stage {
       position: relative;
       width: 100%;
-      aspect-ratio: 41 / 24;
+      /* must match .stage in the card so chip placement stays WYSIWYG */
+      aspect-ratio: 41 / 32;
       background: linear-gradient(170deg, #cfe0f5, #aebff0);
       touch-action: none;
       user-select: none;

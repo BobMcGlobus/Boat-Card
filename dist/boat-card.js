@@ -264,7 +264,7 @@ V.elementStyles = [], V.shadowRootOptions = { mode: "open" }, V[ot("elementPrope
  */
 const at = globalThis, Ft = (t) => t, gt = at.trustedTypes, jt = gt ? gt.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, te = "$lit$", U = `lit$${Math.random().toFixed(9).slice(2)}$`, ee = "?" + U, we = `<${ee}>`, Q = document, nt = () => Q.createComment(""), ct = (t) => t === null || typeof t != "object" && typeof t != "function", Tt = Array.isArray, ke = (t) => Tt(t) || typeof t?.[Symbol.iterator] == "function", wt = `[ 	
 \f\r]`, it = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, It = /-->/g, Kt = />/g, K = RegExp(`>|${wt}(?:([^\\s"'>=/]+)(${wt}*=${wt}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Gt = /'/g, Wt = /"/g, ie = /^(?:script|style|textarea|title)$/i, re = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = re(1), $ = re(2), X = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Qt = /* @__PURE__ */ new WeakMap(), W = Q.createTreeWalker(Q, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Wt = /'/g, Gt = /"/g, ie = /^(?:script|style|textarea|title)$/i, re = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = re(1), $ = re(2), X = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Qt = /* @__PURE__ */ new WeakMap(), G = Q.createTreeWalker(Q, 129);
 function oe(t, e) {
   if (!Tt(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return jt !== void 0 ? jt.createHTML(e) : e;
@@ -275,7 +275,7 @@ const Se = (t, e) => {
   for (let n = 0; n < i; n++) {
     const c = t[n];
     let p, u, h = -1, _ = 0;
-    for (; _ < c.length && (a.lastIndex = _, u = a.exec(c), u !== null); ) _ = a.lastIndex, a === it ? u[1] === "!--" ? a = It : u[1] !== void 0 ? a = Kt : u[2] !== void 0 ? (ie.test(u[2]) && (o = RegExp("</" + u[2], "g")), a = K) : u[3] !== void 0 && (a = K) : a === K ? u[0] === ">" ? (a = o ?? it, h = -1) : u[1] === void 0 ? h = -2 : (h = a.lastIndex - u[2].length, p = u[1], a = u[3] === void 0 ? K : u[3] === '"' ? Wt : Gt) : a === Wt || a === Gt ? a = K : a === It || a === Kt ? a = it : (a = K, o = void 0);
+    for (; _ < c.length && (a.lastIndex = _, u = a.exec(c), u !== null); ) _ = a.lastIndex, a === it ? u[1] === "!--" ? a = It : u[1] !== void 0 ? a = Kt : u[2] !== void 0 ? (ie.test(u[2]) && (o = RegExp("</" + u[2], "g")), a = K) : u[3] !== void 0 && (a = K) : a === K ? u[0] === ">" ? (a = o ?? it, h = -1) : u[1] === void 0 ? h = -2 : (h = a.lastIndex - u[2].length, p = u[1], a = u[3] === void 0 ? K : u[3] === '"' ? Gt : Wt) : a === Gt || a === Wt ? a = K : a === It || a === Kt ? a = it : (a = K, o = void 0);
     const x = a === K && t[n + 1].startsWith("/>") ? " " : "";
     s += a === it ? c + we : h >= 0 ? (r.push(p), c.slice(0, h) + te + c.slice(h) + U + x) : c + U + (h === -2 ? n : x);
   }
@@ -287,11 +287,11 @@ class lt {
     this.parts = [];
     let s = 0, a = 0;
     const n = e.length - 1, c = this.parts, [p, u] = Se(e, i);
-    if (this.el = lt.createElement(p, r), W.currentNode = this.el.content, i === 2 || i === 3) {
+    if (this.el = lt.createElement(p, r), G.currentNode = this.el.content, i === 2 || i === 3) {
       const h = this.el.content.firstChild;
       h.replaceWith(...h.childNodes);
     }
-    for (; (o = W.nextNode()) !== null && c.length < n; ) {
+    for (; (o = G.nextNode()) !== null && c.length < n; ) {
       if (o.nodeType === 1) {
         if (o.hasAttributes()) for (const h of o.getAttributeNames()) if (h.endsWith(te)) {
           const _ = u[a++], x = o.getAttribute(h).split(U), m = /([.?@])?(.*)/.exec(_);
@@ -301,7 +301,7 @@ class lt {
           const h = o.textContent.split(U), _ = h.length - 1;
           if (_ > 0) {
             o.textContent = gt ? gt.emptyScript : "";
-            for (let x = 0; x < _; x++) o.append(h[x], nt()), W.nextNode(), c.push({ type: 2, index: ++s });
+            for (let x = 0; x < _; x++) o.append(h[x], nt()), G.nextNode(), c.push({ type: 2, index: ++s });
             o.append(h[_], nt());
           }
         }
@@ -336,16 +336,16 @@ class Ae {
   }
   u(e) {
     const { el: { content: i }, parts: r } = this._$AD, o = (e?.creationScope ?? Q).importNode(i, !0);
-    W.currentNode = o;
-    let s = W.nextNode(), a = 0, n = 0, c = r[0];
+    G.currentNode = o;
+    let s = G.nextNode(), a = 0, n = 0, c = r[0];
     for (; c !== void 0; ) {
       if (a === c.index) {
         let p;
         c.type === 2 ? p = new dt(s, s.nextSibling, this, e) : c.type === 1 ? p = new c.ctor(s, c.name, c.strings, this, e) : c.type === 6 && (p = new Me(s, this, e)), this._$AV.push(p), c = r[++n];
       }
-      a !== c?.index && (s = W.nextNode(), a++);
+      a !== c?.index && (s = G.nextNode(), a++);
     }
-    return W.currentNode = Q, o;
+    return G.currentNode = Q, o;
   }
   p(e) {
     let i = 0;
@@ -571,11 +571,11 @@ function C(t) {
   return O({ ...t, state: !0, attribute: !1 });
 }
 const Le = ["unavailable", "unknown", "none", ""];
-function b(t, e) {
+function g(t, e) {
   if (!(!t || !e))
     return t.states[e];
 }
-function L(t) {
+function R(t) {
   return !t || Le.includes(String(t.state).toLowerCase());
 }
 function ht(t) {
@@ -583,7 +583,7 @@ function ht(t) {
   const e = String(t.state).toLowerCase();
   return ["on", "open", "home", "active", "charging", "true", "playing"].includes(e);
 }
-function G(t, e) {
+function W(t, e) {
   if (!t) return NaN;
   const i = e ? t.attributes?.[e] : t.state;
   if (i == null) return NaN;
@@ -658,9 +658,9 @@ function Y(t, e, i) {
 function Be(t, e) {
   return e ? ["%"].includes(e) ? `${t}${e}` : `${t} ${e}` : t;
 }
-function S(t, e, i = {}) {
-  if (L(e)) return i.unavailable ?? "—";
-  const r = G(e, i.attribute);
+function k(t, e, i = {}) {
+  if (R(e)) return i.unavailable ?? "—";
+  const r = W(e, i.attribute);
   if (Number.isFinite(r))
     return Be(Y(t, r, i.precision), i.unit ?? Ue(e));
   if (i.attribute && e) {
@@ -777,16 +777,16 @@ const je = {
 function Ke(t) {
   return (t?.locale?.language ?? t?.language ?? "de").toLowerCase().startsWith("de") ? "de" : "en";
 }
-function g(t, e) {
+function b(t, e) {
   return (Ke(t) === "de" ? je : Ie)[e] ?? e;
 }
-const Ge = [
+const We = [
   "default",
   "glass",
   "material",
   "bubble",
   "mirror"
-], Pt = ["dock", "sailing", "trailer"], We = [
+], Pt = ["dock", "sailing", "trailer"], Ge = [
   "boat",
   "battery",
   "solar",
@@ -796,7 +796,7 @@ const Ge = [
   "sensor"
 ];
 function Zt(t) {
-  return `s-${t && Ge.includes(t) ? t : "default"}`;
+  return `s-${t && We.includes(t) ? t : "default"}`;
 }
 const Qe = vt`
   :host {
@@ -845,9 +845,8 @@ const Qe = vt`
   }
   .s-glass .metric {
     border: 1px solid color-mix(in srgb, var(--primary-text-color) 12%, transparent);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent),
-      0 8px 24px color-mix(in srgb, #000 10%, transparent);
+    /* no outer drop shadow — it reads as dark bands between stacked tiles */
+    box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 25%, transparent);
     -webkit-backdrop-filter: blur(18px) saturate(1.5);
     backdrop-filter: blur(18px) saturate(1.5);
   }
@@ -968,7 +967,7 @@ const Qe = vt`
   }
   .metrics {
     display: grid;
-    grid-template-columns: repeat(var(--bc-columns, 2), minmax(0, 1fr));
+    grid-template-columns: repeat(var(--bc-columns, 1), minmax(0, 1fr));
     gap: 12px;
   }
   .cardroot.flat .metrics {
@@ -1171,7 +1170,8 @@ const Qe = vt`
   .stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 41 / 24;
+    /* taller hero stage — the boat image is the centerpiece of the card */
+    aspect-ratio: 41 / 32;
   }
   .scene {
     position: absolute;
@@ -1808,17 +1808,17 @@ function Vt(t, e = {}) {
               stroke=${ft} stroke-width="1"/>` : d}
       ${f.label ? $`<text class="axis" x=${_(f.i)} y=${r - 3} text-anchor="middle">${f.label}</text>` : d}`
   ), $t = s.map((f) => {
-    const k = f.values.map((y, I) => ({ x: _(I), y: x(y), ok: Number.isFinite(y) })).filter((y) => y.ok);
-    if (!k.length) return d;
-    let v = `M ${k[0].x} ${k[0].y}`;
-    for (let y = 1; y < k.length; y++) {
-      const I = (k[y - 1].x + k[y].x) / 2;
-      v += ` C ${I} ${k[y - 1].y}, ${I} ${k[y].y}, ${k[y].x} ${k[y].y}`;
+    const S = f.values.map((y, I) => ({ x: _(I), y: x(y), ok: Number.isFinite(y) })).filter((y) => y.ok);
+    if (!S.length) return d;
+    let v = `M ${S[0].x} ${S[0].y}`;
+    for (let y = 1; y < S.length; y++) {
+      const I = (S[y - 1].x + S[y].x) / 2;
+      v += ` C ${I} ${S[y - 1].y}, ${I} ${S[y].y}, ${S[y].x} ${S[y].y}`;
     }
     return $`
       <path d=${v} fill="none" stroke=${f.color} stroke-width="2.2"
         stroke-linecap="round" stroke-linejoin="round"/>
-      ${o ? k.map(
+      ${o ? S.map(
       (y) => $`<circle cx=${y.x} cy=${y.y} r="3.1" fill="var(--bc-dot-fill)"
                 stroke=${f.color} stroke-width="2"/>`
     ) : d}
@@ -1847,10 +1847,10 @@ function Yt(t, e, i, r = {}) {
     const I = Math.max(m(v), v > 0 ? 3 : 1.5), pe = u + y * _ + (_ - x) / 2;
     return $`<rect x=${pe} y=${s - h - I} width=${x} height=${I}
       rx=${Math.min(x / 2, 4)} fill=${e} opacity=${v > 0 ? 1 : 0.25}/>`;
-  }), k = Number.isFinite(i) ? $`<line x1=${u} x2=${o - M} y1=${s - h - m(i)} y2=${s - h - m(i)}
+  }), S = Number.isFinite(i) ? $`<line x1=${u} x2=${o - M} y1=${s - h - m(i)} y2=${s - h - m(i)}
         stroke=${e} stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>` : d;
   return l`<svg class="chart" viewBox="0 0 ${o} ${s}" aria-hidden="true">
-    ${j}${$t}${k}${f}
+    ${j}${$t}${S}${f}
   </svg>`;
 }
 var ei = Object.defineProperty, ii = Object.getOwnPropertyDescriptor, A = (t, e, i, r) => {
@@ -1900,7 +1900,7 @@ function q(t) {
     ) : void 0
   }));
 }
-let R = class extends H {
+let L = class extends H {
   constructor() {
     super(...arguments), this.chips = [], this._variant = "dock", this._expanded = -1, this._label = (t) => he[t?.name] ?? t?.name ?? "";
   }
@@ -2095,7 +2095,7 @@ let R = class extends H {
   _renderDot(t, e) {
     const i = this._chipPos(t);
     if (!i) return d;
-    const r = b(this.hass, t.entity), o = bt(t.color) ?? "var(--bc-accent, #5b7cfa)", s = r ? S(this.hass, r, { precision: t.precision, unit: t.unit }) : "—", a = i.dot ?? (i.x >= 50 ? "left" : "right"), n = (t.name ?? tt(r, t.entity)) || `#${e + 1}`;
+    const r = g(this.hass, t.entity), o = bt(t.color) ?? "var(--bc-accent, #5b7cfa)", s = r ? k(this.hass, r, { precision: t.precision, unit: t.unit }) : "—", a = i.dot ?? (i.x >= 50 ? "left" : "right"), n = (t.name ?? tt(r, t.entity)) || `#${e + 1}`;
     return l`<div
       class="ce-anchor dot-${a} ${e === this._expanded ? "active" : ""}"
       style="left:${i.x}%;top:${i.y}%;--ac:${o}"
@@ -2116,7 +2116,7 @@ let R = class extends H {
     </div>`;
   }
   _renderRow(t, e) {
-    const i = b(this.hass, t.entity), r = !!t.positions?.[this._variant], o = !!t.positions?.[this._variant]?.hidden, s = bt(t.color) ?? "var(--bc-accent, #5b7cfa)", a = (t.name ?? tt(i, t.entity)) || `Chip #${e + 1}`, n = e === this._expanded;
+    const i = g(this.hass, t.entity), r = !!t.positions?.[this._variant], o = !!t.positions?.[this._variant]?.hidden, s = bt(t.color) ?? "var(--bc-accent, #5b7cfa)", a = (t.name ?? tt(i, t.entity)) || `Chip #${e + 1}`, n = e === this._expanded;
     return l`<div class="ce-row ${n ? "open" : ""}">
       <div class="ce-row-head" @click=${() => this._expanded = n ? -1 : e}>
         <span class="swatch" style="background:${s}"></span>
@@ -2159,7 +2159,7 @@ let R = class extends H {
     </div>`;
   }
 };
-R.styles = vt`
+L.styles = vt`
     .ce {
       display: flex;
       flex-direction: column;
@@ -2194,7 +2194,8 @@ R.styles = vt`
     .ce-stage {
       position: relative;
       width: 100%;
-      aspect-ratio: 41 / 24;
+      /* must match .stage in the card so chip placement stays WYSIWYG */
+      aspect-ratio: 41 / 32;
       background: linear-gradient(170deg, #cfe0f5, #aebff0);
       touch-action: none;
       user-select: none;
@@ -2357,25 +2358,25 @@ R.styles = vt`
   `;
 A([
   O({ attribute: !1 })
-], R.prototype, "hass", 2);
+], L.prototype, "hass", 2);
 A([
   O({ attribute: !1 })
-], R.prototype, "chips", 2);
+], L.prototype, "chips", 2);
 A([
   O({ attribute: !1 })
-], R.prototype, "images", 2);
+], L.prototype, "images", 2);
 A([
   C()
-], R.prototype, "_variant", 2);
+], L.prototype, "_variant", 2);
 A([
   C()
-], R.prototype, "_expanded", 2);
+], L.prototype, "_expanded", 2);
 A([
   C()
-], R.prototype, "_working", 2);
-R = A([
+], L.prototype, "_working", 2);
+L = A([
   xt("boat-chips-editor")
-], R);
+], L);
 let B = class extends H {
   constructor() {
     super(...arguments), this.items = [], this.fields = [], this.addLabel = "Hinzufügen", this._expanded = -1, this._label = (t) => he[t?.name] ?? t?.name ?? "";
@@ -2413,7 +2414,7 @@ let B = class extends H {
     const t = (this.items ?? []).map((e) => this._norm(e));
     return l`<div class="li">
       ${t.map((e, i) => {
-      const r = b(this.hass, e.entity), o = i === this._expanded, s = (e.name ?? tt(r, e.entity)) || `#${i + 1}`;
+      const r = g(this.hass, e.entity), o = i === this._expanded, s = (e.name ?? tt(r, e.entity)) || `#${i + 1}`;
       return l`<div class="row ${o ? "open" : ""}">
           <div class="head" @click=${() => this._expanded = o ? -1 : i}>
             ${e.icon ? l`<ha-icon icon=${e.icon}></ha-icon>` : d}
@@ -2548,6 +2549,7 @@ const St = {
   location: "Standort (device_tracker)",
   lat: "Breitengrad (Sensor)",
   lon: "Längengrad (Sensor)",
+  altitude: "Höhe (Sensor)",
   speed_unit: "Einheit Geschwindigkeit",
   soc: "Ladezustand (%)",
   voltage: "Spannung",
@@ -2745,6 +2747,7 @@ let et = class extends H {
               N("location", ["device_tracker", "person", "zone"]),
               w("lat"),
               w("lon"),
+              w("altitude"),
               E("speed_unit")
             ]
           }
@@ -2856,13 +2859,13 @@ let et = class extends H {
       <div class="add-row">
         <select class="add-sel" @change=${this._addSection}>
           <option value="">+ Sektion hinzufügen …</option>
-          ${We.map((e) => l`<option value=${e}>${Xt[e]}</option>`)}
+          ${Ge.map((e) => l`<option value=${e}>${Xt[e]}</option>`)}
         </select>
       </div>
     `;
   }
   _renderSection(t, e) {
-    const i = e === this._expanded, r = P[t.type] ?? P.sensor, o = t.entity ?? t.soc ?? t.power ?? t.camera ?? t.switch ?? t.url ?? "", s = t.name ?? tt(b(this.hass, o), "");
+    const i = e === this._expanded, r = P[t.type] ?? P.sensor, o = t.entity ?? t.soc ?? t.power ?? t.camera ?? t.switch ?? t.url ?? "", s = t.name ?? tt(g(this.hass, o), "");
     return l`<div class="sec ${i ? "open" : ""}">
       <div class="sec-head" @click=${() => this._expanded = i ? -1 : e}>
         <ha-icon .icon=${t.icon ?? r.icon}></ha-icon>
@@ -3035,7 +3038,6 @@ let z = class extends H {
       type: "custom:boat-card",
       title: "Hoppetosse",
       card_style: "default",
-      columns: 2,
       sections: [
         {
           type: "boat",
@@ -3106,7 +3108,7 @@ let z = class extends H {
   }
   _name(t) {
     const e = P[t.type] ?? P.sensor;
-    return t.name ?? g(this.hass, e.nameKey);
+    return t.name ?? b(this.hass, e.nameKey);
   }
   _isFull(t) {
     return t.full_width ?? ["boat", "camera", "grafana"].includes(t.type);
@@ -3132,7 +3134,7 @@ let z = class extends H {
             <div class="title">${t.title}</div>
             ${t.subtitle ? l`<div class="subtitle">${t.subtitle}</div>` : d}
           </div>` : d}
-      <div class="metrics ${t.layout === "carousel" ? "carousel" : ""}" style="--bc-columns:${t.columns ?? 2}">
+      <div class="metrics ${t.layout === "carousel" ? "carousel" : ""}" style="--bc-columns:${t.columns ?? 1}">
         ${(t.sections ?? []).map((r, o) => this._renderSection(r, o))}
       </div>
     `;
@@ -3220,14 +3222,14 @@ let z = class extends H {
   }
   // ==================== BATTERY / SOLAR / SENSOR (value tiles) ====================
   _kvRow(t, e) {
-    const i = b(this.hass, t);
-    return !t || L(i) ? d : l`<div class="kv"><span>${e}</span><b>${S(this.hass, i)}</b></div>`;
+    const i = g(this.hass, t);
+    return !t || R(i) ? d : l`<div class="kv"><span>${e}</span><b>${k(this.hass, i)}</b></div>`;
   }
   _socColor(t) {
     return Number.isFinite(t) ? t >= 50 ? "var(--bc-battery)" : t >= 20 ? "var(--bc-solar)" : "var(--bc-danger)" : "var(--secondary-text-color)";
   }
   _valueTile(t, e, i, r, o, s, a) {
-    const n = b(this.hass, i), c = (t.tap_action ?? "popup") !== "none";
+    const n = g(this.hass, i), c = (t.tap_action ?? "popup") !== "none";
     return l`<div
       class="tile-inner ${c ? "clickable" : ""}"
       @click=${() => this._handleTap(t, e, i)}
@@ -3243,34 +3245,34 @@ let z = class extends H {
     </div>`;
   }
   _renderBattery(t, e) {
-    const i = b(this.hass, t.soc), r = G(i), o = this._socColor(r), s = i ? l`<div class="value" style="color:${o}">${S(this.hass, i, { unit: "%", precision: 0 })}</div>
-          <div class="progress"><span style="width:${Math.max(0, Math.min(100, r || 0))}%;--bar-color:${o}"></span></div>` : l`<div class="missing">${g(this.hass, "unavailable")}</div>`, a = l`<div class="kvs">
-      ${this._kvRow(t.voltage, g(this.hass, "voltage"))}
-      ${this._kvRow(t.current, g(this.hass, "current"))}
-      ${this._kvRow(t.power, g(this.hass, "power_now"))}
-      ${this._kvRow(t.temperature, g(this.hass, "temperature"))}
+    const i = g(this.hass, t.soc), r = W(i), o = this._socColor(r), s = i ? l`<div class="value" style="color:${o}">${k(this.hass, i, { unit: "%", precision: 0 })}</div>
+          <div class="progress"><span style="width:${Math.max(0, Math.min(100, r || 0))}%;--bar-color:${o}"></span></div>` : l`<div class="missing">${b(this.hass, "unavailable")}</div>`, a = l`<div class="kvs">
+      ${this._kvRow(t.voltage, b(this.hass, "voltage"))}
+      ${this._kvRow(t.current, b(this.hass, "current"))}
+      ${this._kvRow(t.power, b(this.hass, "power_now"))}
+      ${this._kvRow(t.temperature, b(this.hass, "temperature"))}
       ${this._kvRow(t.time_remaining, "⌛")}
     </div>`;
     return this._valueTile(t, e, t.soc, s, a, [t.soc ?? ""], o);
   }
   _renderSolar(t, e) {
-    const i = b(this.hass, t.power), r = i ? l`<div class="value" style="color:var(--bc-solar)">${S(this.hass, i, { unit: "W", precision: 0 })}</div>` : l`<div class="missing">${g(this.hass, "unavailable")}</div>`, o = l`<div class="kvs">
-      ${this._kvRow(t.yield_today, g(this.hass, "yield_today"))}
-      ${this._kvRow(t.voltage, g(this.hass, "voltage"))}
-      ${this._kvRow(t.current, g(this.hass, "current"))}
-      ${this._kvRow(t.state, g(this.hass, "state"))}
+    const i = g(this.hass, t.power), r = i ? l`<div class="value" style="color:var(--bc-solar)">${k(this.hass, i, { unit: "W", precision: 0 })}</div>` : l`<div class="missing">${b(this.hass, "unavailable")}</div>`, o = l`<div class="kvs">
+      ${this._kvRow(t.yield_today, b(this.hass, "yield_today"))}
+      ${this._kvRow(t.voltage, b(this.hass, "voltage"))}
+      ${this._kvRow(t.current, b(this.hass, "current"))}
+      ${this._kvRow(t.state, b(this.hass, "state"))}
     </div>`;
     return this._valueTile(t, e, t.power, r, o, [t.power ?? ""], "var(--bc-solar)");
   }
   _renderSensor(t, e) {
-    const i = t.entity ?? (t.entities?.length ? typeof t.entities[0] == "string" ? t.entities[0] : t.entities[0].entity : void 0), r = b(this.hass, i), o = l`<div class="value">${S(this.hass, r, { precision: t.precision, unit: t.unit, attribute: t.attribute, unavailable: "—" })}</div>`, s = (t.secondary ?? []).map((n) => b(this.hass, n)).filter((n) => n && !L(n)).map((n) => S(this.hass, n)), a = s.length ? l`<div class="secondary-vals">${s.join(" · ")}</div>` : d;
+    const i = t.entity ?? (t.entities?.length ? typeof t.entities[0] == "string" ? t.entities[0] : t.entities[0].entity : void 0), r = g(this.hass, i), o = l`<div class="value">${k(this.hass, r, { precision: t.precision, unit: t.unit, attribute: t.attribute, unavailable: "—" })}</div>`, s = (t.secondary ?? []).map((n) => g(this.hass, n)).filter((n) => n && !R(n)).map((n) => k(this.hass, n)), a = s.length ? l`<div class="secondary-vals">${s.join(" · ")}</div>` : d;
     return this._valueTile(t, e, i, o, a, this._sectionSeries(t), this._accent(t));
   }
   // ==================== BOAT HERO ====================
   _variant(t, e) {
     if (this._variantOverride[e]) return this._variantOverride[e];
     if (t.variant_entity) {
-      const i = b(this.hass, t.variant_entity);
+      const i = g(this.hass, t.variant_entity);
       if (i) {
         const r = t.variant_map?.[i.state];
         if (r) return r;
@@ -3294,7 +3296,7 @@ let z = class extends H {
     const i = { dock: "mdi:dock-top", sailing: "mdi:sail-boat", trailer: "mdi:truck-trailer" };
     return l`<div class="variant-switch">
       ${Pt.map(
-      (r) => l`<button class=${r === t ? "on" : ""} title=${g(this.hass, r)} @click=${() => this._variantOverride = { ...this._variantOverride, [e]: r }}>
+      (r) => l`<button class=${r === t ? "on" : ""} title=${b(this.hass, r)} @click=${() => this._variantOverride = { ...this._variantOverride, [e]: r }}>
           <ha-icon .icon=${i[r]}></ha-icon>
         </button>`
     )}
@@ -3317,15 +3319,15 @@ let z = class extends H {
     }
   }
   _renderChip(t, e) {
-    const i = this._chipPos(t, e), r = b(this.hass, t.entity);
+    const i = this._chipPos(t, e), r = g(this.hass, t.entity);
     if (!i || !r) return d;
     const o = i.dot ?? (i.x >= 50 ? "left" : "right"), s = bt(t.color) ?? "var(--bc-accent)";
     let a;
     if (t.entity2) {
-      const c = b(this.hass, t.entity2);
-      a = `${S(this.hass, r, { precision: t.precision, unit: "" })} / ${S(this.hass, c, { precision: t.precision })}`;
+      const c = g(this.hass, t.entity2);
+      a = `${k(this.hass, r, { precision: t.precision, unit: "" })} / ${k(this.hass, c, { precision: t.precision })}`;
     } else
-      a = S(this.hass, r, { precision: t.precision, unit: t.unit, attribute: t.attribute });
+      a = k(this.hass, r, { precision: t.precision, unit: t.unit, attribute: t.attribute });
     const n = t.name ?? tt(r, "");
     return l`<div class="anchor dot-${o}" style="left:${i.x}%;top:${i.y}%;--ac:${s}" @click=${() => this._tapChip(t)}>
       <span class="anchor-dot"></span>
@@ -3340,53 +3342,55 @@ let z = class extends H {
   }
   _renderGps(t) {
     if (!t) return d;
-    const e = [], i = b(this.hass, t.speed);
-    i && !L(i) && e.push(l`<span class="gps-item"><ha-icon icon="mdi:speedometer"></ha-icon>${S(this.hass, i, { unit: t.speed_unit })}</span>`);
-    const r = b(this.hass, t.heading);
-    if (r && !L(r)) {
-      const s = G(r);
-      e.push(l`<span class="gps-item"><ha-icon icon="mdi:compass-outline"></ha-icon>${Fe(s)} ${Number.isFinite(s) ? l`${Y(this.hass, s, 0)}°` : ""}</span>`);
+    const e = [], i = g(this.hass, t.speed);
+    i && !R(i) && e.push(l`<span class="gps-item"><ha-icon icon="mdi:speedometer"></ha-icon>${k(this.hass, i, { unit: t.speed_unit })}</span>`);
+    const r = g(this.hass, t.heading);
+    if (r && !R(r)) {
+      const a = W(r);
+      e.push(l`<span class="gps-item"><ha-icon icon="mdi:compass-outline"></ha-icon>${Fe(a)} ${Number.isFinite(a) ? l`${Y(this.hass, a, 0)}°` : ""}</span>`);
     }
     const o = this._coords(t);
-    return o && e.push(l`<span class="gps-item"><ha-icon icon="mdi:map-marker"></ha-icon>${o}</span>`), e.length ? l`<div class="gps-bar">${e}</div>` : d;
+    o && e.push(l`<span class="gps-item"><ha-icon icon="mdi:map-marker"></ha-icon>${o}</span>`);
+    const s = g(this.hass, t.altitude);
+    return s && !R(s) && e.push(l`<span class="gps-item"><ha-icon icon="mdi:altimeter"></ha-icon>${k(this.hass, s, { precision: 0 })}</span>`), e.length ? l`<div class="gps-bar">${e}</div>` : d;
   }
   _coords(t) {
     let e = NaN, i = NaN;
     if (t.location) {
-      const r = b(this.hass, t.location);
-      e = G(r, "latitude"), i = G(r, "longitude");
+      const r = g(this.hass, t.location);
+      e = W(r, "latitude"), i = W(r, "longitude");
     }
-    return !Number.isFinite(e) && t.lat && (e = G(b(this.hass, t.lat))), !Number.isFinite(i) && t.lon && (i = G(b(this.hass, t.lon))), !Number.isFinite(e) || !Number.isFinite(i) ? "" : `${e.toFixed(4)}, ${i.toFixed(4)}`;
+    return !Number.isFinite(e) && t.lat && (e = W(g(this.hass, t.lat))), !Number.isFinite(i) && t.lon && (i = W(g(this.hass, t.lon))), !Number.isFinite(e) || !Number.isFinite(i) ? "" : `${e.toFixed(4)}, ${i.toFixed(4)}`;
   }
   _renderControls(t) {
     return t?.length ? l`<div class="controls">
       ${t.map((e) => {
-      const i = typeof e == "string" ? { entity: e } : e, r = b(this.hass, i.entity), o = ht(r), s = o ? i.icon_on ?? i.icon : i.icon;
+      const i = typeof e == "string" ? { entity: e } : e, r = g(this.hass, i.entity), o = ht(r), s = o ? i.icon_on ?? i.icon : i.icon;
       return l`<button class="ctl ${o ? "on" : ""}" @click=${() => rt(this.hass, i.entity)}>
           <ha-icon .icon=${s ?? "mdi:power"}></ha-icon>
           <span class="cl">${i.name ?? tt(r, "")}</span>
-          <span class="cl">${o ? g(this.hass, "on") : g(this.hass, "off")}</span>
+          <span class="cl">${o ? b(this.hass, "on") : b(this.hass, "off")}</span>
         </button>`;
     })}
     </div>` : d;
   }
   // ==================== FRIDGE ====================
   _renderFridge(t) {
-    const e = b(this.hass, t.switch), i = ht(e), r = b(this.hass, t.temperature);
+    const e = g(this.hass, t.switch), i = ht(e), r = g(this.hass, t.temperature);
     return l`
       ${this._tileHead(t)}
       <div class="fridge">
         ${t.switch ? l`<button class="power ${i ? "on" : ""}" @click=${() => rt(this.hass, t.switch)}>
               <ha-icon icon="mdi:fridge-outline"></ha-icon>
-              <span>${i ? g(this.hass, "on") : g(this.hass, "off")}</span>
+              <span>${i ? b(this.hass, "on") : b(this.hass, "off")}</span>
             </button>` : d}
         <div class="readouts">
           ${t.temperature ? l`<div class="ro" @click=${() => Z(this, t.temperature)}>
-                <span class="l">${g(this.hass, "fridge_temp")}</span>
-                <span class="v">${S(this.hass, r, { precision: 1 })}</span>
+                <span class="l">${b(this.hass, "fridge_temp")}</span>
+                <span class="v">${k(this.hass, r, { precision: 1 })}</span>
               </div>` : d}
-          ${t.target && !L(b(this.hass, t.target)) ? l`<div class="ro"><span class="l">${g(this.hass, "target")}</span><span class="v">${S(this.hass, b(this.hass, t.target), { precision: 1 })}</span></div>` : d}
-          ${t.power && !L(b(this.hass, t.power)) ? l`<div class="ro"><span class="l">${g(this.hass, "power_now")}</span><span class="v">${S(this.hass, b(this.hass, t.power))}</span></div>` : d}
+          ${t.target && !R(g(this.hass, t.target)) ? l`<div class="ro"><span class="l">${b(this.hass, "target")}</span><span class="v">${k(this.hass, g(this.hass, t.target), { precision: 1 })}</span></div>` : d}
+          ${t.power && !R(g(this.hass, t.power)) ? l`<div class="ro"><span class="l">${b(this.hass, "power_now")}</span><span class="v">${k(this.hass, g(this.hass, t.power))}</span></div>` : d}
         </div>
       </div>
     `;
@@ -3412,19 +3416,19 @@ let z = class extends H {
     return r ? e[r] : {};
   }
   _renderCamera(t) {
-    const e = b(this.hass, t.camera), i = b(this.hass, t.switch), r = b(this.hass, t.presets), o = this._ptzButtons(t), s = t.ptz !== !1 && (t.ptz === !0 || di.some((c) => o[c])), a = e?.attributes?.entity_picture, n = (c, p) => l`<button class="ptz-btn" ?disabled=${!o[c]} @click=${() => o[c] && this.hass.callService("button", "press", { entity_id: o[c] })}><ha-icon .icon=${p}></ha-icon></button>`;
+    const e = g(this.hass, t.camera), i = g(this.hass, t.switch), r = g(this.hass, t.presets), o = this._ptzButtons(t), s = t.ptz !== !1 && (t.ptz === !0 || di.some((c) => o[c])), a = e?.attributes?.entity_picture, n = (c, p) => l`<button class="ptz-btn" ?disabled=${!o[c]} @click=${() => o[c] && this.hass.callService("button", "press", { entity_id: o[c] })}><ha-icon .icon=${p}></ha-icon></button>`;
     return l`
       ${this._tileHead(
       t,
-      t.switch ? l`<button class="ptz-btn" style=${ht(i) ? "color:var(--bc-accent)" : ""} title=${g(this.hass, "camera_power")} @click=${() => rt(this.hass, t.switch)}><ha-icon icon="mdi:power"></ha-icon></button>` : void 0
+      t.switch ? l`<button class="ptz-btn" style=${ht(i) ? "color:var(--bc-accent)" : ""} title=${b(this.hass, "camera_power")} @click=${() => rt(this.hass, t.switch)}><ha-icon icon="mdi:power"></ha-icon></button>` : void 0
     )}
       <div class="cam-wrap" style="--ar:${(t.aspect_ratio ?? "16:9").replace(":", "/")}">
-        ${t.switch && !ht(i) ? l`<div class="cam off"><ha-icon icon="mdi:cctv-off"></ha-icon><span>${g(this.hass, "off")}</span></div>` : l`<div class="cam" @click=${() => t.camera && Z(this, t.camera)}>
+        ${t.switch && !ht(i) ? l`<div class="cam off"><ha-icon icon="mdi:cctv-off"></ha-icon><span>${b(this.hass, "off")}</span></div>` : l`<div class="cam" @click=${() => t.camera && Z(this, t.camera)}>
               ${e ? l`<ha-camera-stream .hass=${this.hass} .stateObj=${e} muted></ha-camera-stream>` : d}
               ${!e && a ? l`<img src=${a} alt="camera" />` : d}
             </div>`}
       </div>
-      ${r && !L(r) ? l`<div class="presets">
+      ${r && !R(r) ? l`<div class="presets">
             <ha-icon icon="mdi:map-marker-radius"></ha-icon>
             <select @change=${(c) => this.hass.callService("select", "select_option", { entity_id: t.presets, option: c.target.value })}>
               ${(r.attributes.options ?? []).map((c) => l`<option ?selected=${c === r.state}>${c}</option>`)}
@@ -3453,9 +3457,9 @@ let z = class extends H {
     return l`
       ${this._tileHead(
       t,
-      t.show_open !== !1 && t.url ? l`<a class="g-open" href=${t.url} target="_blank" rel="noopener" title=${g(this.hass, "open_grafana")}><ha-icon icon="mdi:open-in-new"></ha-icon></a>` : void 0
+      t.show_open !== !1 && t.url ? l`<a class="g-open" href=${t.url} target="_blank" rel="noopener" title=${b(this.hass, "open_grafana")}><ha-icon icon="mdi:open-in-new"></ha-icon></a>` : void 0
     )}
-      ${t.url ? l`<iframe class="frame" style="height:${t.height ?? 400}px" src=${this._grafanaUrl(t)} loading="lazy" referrerpolicy="no-referrer"></iframe>` : l`<div class="missing">${g(this.hass, "no_url")}</div>`}
+      ${t.url ? l`<iframe class="frame" style="height:${t.height ?? 400}px" src=${this._grafanaUrl(t)} loading="lazy" referrerpolicy="no-referrer"></iframe>` : l`<div class="missing">${b(this.hass, "no_url")}</div>`}
     `;
   }
   // ==================== DETAIL POPUP ====================
@@ -3475,15 +3479,15 @@ let z = class extends H {
         </div>
         <div class="ranges">
           ${Ct.map(
-      (m) => l`<button class="range ${m.key === this._popupRange ? "on" : ""}" @click=${() => this._popupRange = m.key}>${g(this.hass, m.labelKey)}</button>`
+      (m) => l`<button class="range ${m.key === this._popupRange ? "on" : ""}" @click=${() => this._popupRange = m.key}>${b(this.hass, m.labelKey)}</button>`
     )}
         </div>
         <div class="bigchart">${n}</div>
         <div class="stats">
-          ${x(g(this.hass, "stat_min"), p)}
-          ${x(g(this.hass, "stat_avg"), h)}
-          ${x(g(this.hass, "stat_max"), u)}
-          ${x(g(this.hass, "stat_trend"), _)}
+          ${x(b(this.hass, "stat_min"), p)}
+          ${x(b(this.hass, "stat_avg"), h)}
+          ${x(b(this.hass, "stat_max"), u)}
+          ${x(b(this.hass, "stat_trend"), _)}
         </div>
       </div>
     </div>`;
