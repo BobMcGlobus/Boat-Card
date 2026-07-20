@@ -175,6 +175,10 @@ export interface SectionConfig {
   images?: Partial<Record<BoatVariant, string>>;
   image_remove_black?: boolean;
   show_variant_switch?: boolean;
+  /** aspect ratio of the boat stage as "W:H" (default "5:7", playing-card portrait) */
+  stage_ratio?: string;
+  /** max width of the boat stage in px (default 400, centered in the tile) */
+  stage_width?: number;
   chips?: ChipConfig[];
   gps?: GpsConfig;
   controls?: (string | ControlConfig)[];

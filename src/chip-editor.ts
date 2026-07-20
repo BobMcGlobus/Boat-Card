@@ -82,6 +82,8 @@ export class BoatChipsEditor extends LitElement {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @property({ attribute: false }) public chips: ChipConfig[] = [];
   @property({ attribute: false }) public images?: Partial<Record<BoatVariant, string>>;
+  /** stage aspect ratio as "W:H" — must mirror the card's stage_ratio */
+  @property() public ratio?: string;
 
   @state() private _variant: BoatVariant = 'dock';
   @state() private _expanded = -1;
@@ -90,6 +92,11 @@ export class BoatChipsEditor extends LitElement {
 
   private get _chips(): ChipConfig[] {
     return this._working ?? this.chips ?? [];
+  }
+
+  private _ratioCss(): string {
+    const m = /^\s*(\d+(?:\.\d+)?)\s*[:/]\s*(\d+(?:\.\d+)?)\s*$/.exec(this.ratio ?? '');
+    return m ? `${m[1]} / ${m[2]}` : '5 / 7';
   }
 
   private _emit(chips: ChipConfig[]): void {
@@ -311,7 +318,7 @@ export class BoatChipsEditor extends LitElement {
         </div>
 
         <div class="ce-stage-wrap">
-          <div class="ce-stage">
+          <div class="ce-stage" style="--ce-ar:${this._ratioCss()}">
             ${this.images?.[this._variant]
               ? html`<img src=${this.images[this._variant]} alt="" />`
               : html`<div class="svg">${boatScene(this._variant)}</div>`}
@@ -456,7 +463,9 @@ export class BoatChipsEditor extends LitElement {
       position: relative;
       width: 100%;
       /* must match .stage in the card so chip placement stays WYSIWYG */
-      aspect-ratio: 41 / 32;
+      aspect-ratio: var(--ce-ar, 5 / 7);
+      max-width: 400px;
+      margin: 0 auto;
       background: linear-gradient(170deg, #cfe0f5, #aebff0);
       touch-action: none;
       user-select: none;

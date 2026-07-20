@@ -380,8 +380,11 @@ export const sharedStyles = css`
   .stage {
     position: relative;
     width: 100%;
-    /* taller hero stage — the boat image is the centerpiece of the card */
-    aspect-ratio: 41 / 32;
+    /* playing-card portrait (poker card 63×88 mm ≈ 5:7), centered like a card
+       lying on the tile; ratio/width configurable per section */
+    aspect-ratio: var(--bc-stage-ar, 5 / 7);
+    max-width: var(--bc-stage-w, 400px);
+    margin: 0 auto;
   }
   .scene {
     position: absolute;

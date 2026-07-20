@@ -646,11 +646,20 @@ export class BoatCard extends LitElement {
     return s.variant ?? 'dock';
   }
 
+  /** "5:7" -> "5 / 7" (safe against junk input) */
+  private _stageRatio(s: SectionConfig): string {
+    const m = /^\s*(\d+(?:\.\d+)?)\s*[:/]\s*(\d+(?:\.\d+)?)\s*$/.exec(s.stage_ratio ?? '');
+    return m ? `${m[1]} / ${m[2]}` : '5 / 7';
+  }
+
   private _renderBoat(s: SectionConfig, i: number): TemplateResult {
     const variant = this._variant(s, i);
     const url = s.images?.[variant];
     return html`
-      <div class="stage">
+      <div
+        class="stage"
+        style="--bc-stage-ar:${this._stageRatio(s)};--bc-stage-w:${s.stage_width ?? 400}px"
+      >
         ${url
           ? html`<img class="scene ${s.image_remove_black ? 'rm-black' : ''}" src=${url} alt=${variant} />`
           : html`<div class="scene">${boatScene(variant)}</div>`}

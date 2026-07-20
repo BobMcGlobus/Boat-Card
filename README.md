@@ -78,8 +78,10 @@ Jede Sektion hat `type`, optional `name`, `icon`, `color` (Akzent) und
   variant: dock                 # dock | sailing | trailer
   variant_entity: sensor.boat_status   # optional: Ansicht aus Entität
   show_variant_switch: true
-  images:                       # optional eigene Renders/Fotos
-    dock: /local/boat/dock.png
+  stage_ratio: "5:7"            # Bildformat B:H — Default: Spielkarten-Hochformat
+  stage_width: 400              # max. Bildbreite in px (zentriert in der Kachel)
+  images:                       # eigene Renders/Fotos — im UI-Editor direkt
+    dock: /local/boat/dock.png  # HOCHLADBAR (HA-Bild-Upload), alternativ URLs
     sailing: /local/boat/sailing.png
     trailer: /local/boat/trailer.png
   chips:
@@ -227,6 +229,9 @@ Alles ist im **UI-Editor** einstellbar — kein YAML nötig:
 - Für die Boot-Sektion: **Chips per Drag** aufs Boot ziehen; Tabs *Steg / Segeln /
   Anhänger* setzen die Position je Ansicht. Der gezogene Punkt ist exakt der
   Ankerpunkt (WYSIWYG).
+- **Boot-Bilder direkt hochladen:** die drei Bild-Felder nutzen Home Assistants
+  Bild-Upload — Datei auswählen, fertig (gespeichert über `/api/image/upload`).
+  URLs/`/local/…`-Pfade funktionieren weiterhin.
 
 ---
 

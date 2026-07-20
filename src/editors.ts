@@ -35,6 +35,8 @@ const LABELS: Record<string, string> = {
   trailer: 'Auf dem Anhänger (URL)',
   image_remove_black: 'Schwarz transparent machen',
   show_variant_switch: 'Umschalter anzeigen',
+  stage_ratio: 'Bildformat (B:H, z. B. 5:7)',
+  stage_width: 'Bildbreite max. (px)',
   gps: 'GPS',
   speed: 'Geschwindigkeit',
   heading: 'Kurs',
@@ -265,11 +267,19 @@ export class BoatCardEditor extends LitElement {
             ],
           },
           bool('show_variant_switch'),
+          { type: 'grid', name: '', schema: [text('stage_ratio'), num('stage_width', 200, 800)] },
           {
             type: 'expandable',
             name: 'images',
             title: LABELS.images,
-            schema: [text('dock'), text('sailing'), text('trailer'), bool('image_remove_black')],
+            schema: [
+              // HA's image selector: native "upload picture" flow right in the
+              // editor (stores via /api/image/upload), URL input as fallback
+              { name: 'dock', selector: { image: {} } },
+              { name: 'sailing', selector: { image: {} } },
+              { name: 'trailer', selector: { image: {} } },
+              bool('image_remove_black'),
+            ],
           },
           {
             type: 'expandable',
@@ -534,6 +544,7 @@ export class BoatCardEditor extends LitElement {
                     .hass=${this.hass}
                     .chips=${s.chips ?? []}
                     .images=${s.images}
+                    .ratio=${s.stage_ratio}
                     @value-changed=${(e: CustomEvent) => this._chipsChanged(e, i)}
                   ></boat-chips-editor>
                   <div class="sub-title">Aktoren-Reihe</div>
