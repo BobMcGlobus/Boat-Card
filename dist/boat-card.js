@@ -1004,8 +1004,12 @@ const Qe = pt`
     border: none;
     box-shadow: none;
   }
+  /* carousel: each slide is an independent flex column of stacked tiles
+     (grouped in the renderer), so tiles keep their natural height and no
+     space is wasted next to the tall boat hero */
   .metrics.carousel {
     display: flex;
+    align-items: flex-start;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
@@ -1014,9 +1018,17 @@ const Qe = pt`
   .metrics.carousel::-webkit-scrollbar {
     display: none;
   }
-  .metrics.carousel > .metric {
+  .metrics.carousel > .slide {
     flex: 0 0 min(85%, 320px);
     scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .metrics.carousel .metric {
+    width: 100%;
+    box-sizing: border-box;
   }
   .metric {
     background: var(--bc-tile-bg);
@@ -2972,6 +2984,7 @@ const Jt = {
   card_style: "Kartenstil",
   columns: "Spalten",
   layout: "Layout",
+  carousel_rows: "Kacheln je Slide (Karussell)",
   background: "Hintergrund anzeigen",
   tiles: "Als Kacheln",
   flush: "Ohne Rand (flush)",
@@ -3158,7 +3171,8 @@ let rt = class extends D {
           B("tiles")
         ]
       },
-      { type: "grid", name: "", schema: [B("background"), B("flush")] }
+      { type: "grid", name: "", schema: [{ name: "carousel_rows", selector: { number: { min: 1, max: 4, mode: "box" } } }, B("background")] },
+      B("flush")
     ];
   }
   _topChanged(t) {
@@ -3755,14 +3769,33 @@ let P = class extends D {
             <div class="title">${t.title}</div>
             ${t.subtitle ? l`<div class="subtitle">${t.subtitle}</div>` : d}
           </div>` : d}
-      <div class="metrics ${t.layout === "carousel" ? "carousel" : ""}" style="--bc-columns:${t.columns ?? 1}">
-        ${(t.sections ?? []).map((r, a) => this._renderSection(r, a))}
+      <div
+        class="metrics ${t.layout === "carousel" ? "carousel" : ""}"
+        style="--bc-columns:${t.columns ?? 1}"
+      >
+        ${t.layout === "carousel" ? this._renderSlides(t) : (t.sections ?? []).map((r, a) => this._renderSection(r, a))}
       </div>
     `;
     return l`
       ${t.background === !1 ? l`<div class="${e} nobg">${i}</div>` : l`<ha-card class=${e}>${i}</ha-card>`}
       ${this._renderPopup()}
     `;
+  }
+  /**
+   * Carousel: group consecutive small tiles into slides of `carousel_rows`
+   * stacked tiles; full-width sections (boat, camera, grafana) get their own
+   * slide. Independent flex columns — no global grid rows, no wasted space.
+   */
+  _renderSlides(t) {
+    const e = Math.max(1, t.carousel_rows ?? 2), i = [];
+    let r = [];
+    const a = () => {
+      r.length && (i.push(l`<div class="slide">${r}</div>`), r = []);
+    };
+    return (t.sections ?? []).forEach((o, s) => {
+      const c = this._renderSection(o, s);
+      this._isFull(o) ? (a(), i.push(l`<div class="slide">${c}</div>`)) : (r.push(c), r.length >= e && a());
+    }), a(), i;
   }
   _renderSection(t, e) {
     const i = this._isFull(t) ? "full" : "", r = this._accent(t);

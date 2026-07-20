@@ -20,6 +20,7 @@ const LABELS: Record<string, string> = {
   card_style: 'Kartenstil',
   columns: 'Spalten',
   layout: 'Layout',
+  carousel_rows: 'Kacheln je Slide (Karussell)',
   background: 'Hintergrund anzeigen',
   tiles: 'Als Kacheln',
   flush: 'Ohne Rand (flush)',
@@ -227,7 +228,8 @@ export class BoatCardEditor extends LitElement {
           bool('tiles'),
         ],
       },
-      { type: 'grid', name: '', schema: [bool('background'), bool('flush')] },
+      { type: 'grid', name: '', schema: [{ name: 'carousel_rows', selector: { number: { min: 1, max: 4, mode: 'box' } } }, bool('background')] },
+      bool('flush'),
     ];
   }
 

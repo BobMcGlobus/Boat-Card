@@ -268,8 +268,13 @@ export class BoatCard extends LitElement {
             ${c.subtitle ? html`<div class="subtitle">${c.subtitle}</div>` : nothing}
           </div>`
         : nothing}
-      <div class="metrics ${c.layout === 'carousel' ? 'carousel' : ''}" style="--bc-columns:${c.columns ?? 1}">
-        ${(c.sections ?? []).map((s, i) => this._renderSection(s, i))}
+      <div
+        class="metrics ${c.layout === 'carousel' ? 'carousel' : ''}"
+        style="--bc-columns:${c.columns ?? 1}"
+      >
+        ${c.layout === 'carousel'
+          ? this._renderSlides(c)
+          : (c.sections ?? []).map((s, i) => this._renderSection(s, i))}
       </div>
     `;
     return html`
@@ -278,6 +283,35 @@ export class BoatCard extends LitElement {
         : html`<ha-card class=${cardClass}>${inner}</ha-card>`}
       ${this._renderPopup()}
     `;
+  }
+
+  /**
+   * Carousel: group consecutive small tiles into slides of `carousel_rows`
+   * stacked tiles; full-width sections (boat, camera, grafana) get their own
+   * slide. Independent flex columns — no global grid rows, no wasted space.
+   */
+  private _renderSlides(c: BoatCardConfig): TemplateResult[] {
+    const rows = Math.max(1, c.carousel_rows ?? 2);
+    const slides: TemplateResult[] = [];
+    let bucket: TemplateResult[] = [];
+    const flush = () => {
+      if (bucket.length) {
+        slides.push(html`<div class="slide">${bucket}</div>`);
+        bucket = [];
+      }
+    };
+    (c.sections ?? []).forEach((s, i) => {
+      const tile = this._renderSection(s, i);
+      if (this._isFull(s)) {
+        flush();
+        slides.push(html`<div class="slide">${tile}</div>`);
+      } else {
+        bucket.push(tile);
+        if (bucket.length >= rows) flush();
+      }
+    });
+    flush();
+    return slides;
   }
 
   private _renderSection(s: SectionConfig, i: number): TemplateResult {

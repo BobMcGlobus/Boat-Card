@@ -290,6 +290,8 @@ export interface BoatCardConfig {
   columns?: number;
   /** grid (default) or carousel: horizontally scrollable tiles */
   layout?: 'grid' | 'carousel';
+  /** carousel: stacked tiles per slide (default 2; boat spans all rows) */
+  carousel_rows?: number;
   sections: SectionConfig[];
 }
 

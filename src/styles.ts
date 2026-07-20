@@ -187,8 +187,12 @@ export const sharedStyles = css`
     border: none;
     box-shadow: none;
   }
+  /* carousel: each slide is an independent flex column of stacked tiles
+     (grouped in the renderer), so tiles keep their natural height and no
+     space is wasted next to the tall boat hero */
   .metrics.carousel {
     display: flex;
+    align-items: flex-start;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
@@ -197,9 +201,17 @@ export const sharedStyles = css`
   .metrics.carousel::-webkit-scrollbar {
     display: none;
   }
-  .metrics.carousel > .metric {
+  .metrics.carousel > .slide {
     flex: 0 0 min(85%, 320px);
     scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+  .metrics.carousel .metric {
+    width: 100%;
+    box-sizing: border-box;
   }
   .metric {
     background: var(--bc-tile-bg);
