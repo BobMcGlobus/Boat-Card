@@ -629,6 +629,168 @@ export class BoatChipsEditor extends LitElement {
 }
 
 // ---------------------------------------------------------------------------
+// Image upload row: file upload via HA's /api/image/upload + URL input +
+// thumbnail preview. Own component because ha-form has no image selector.
+// ---------------------------------------------------------------------------
+
+@customElement('boat-image-upload')
+export class BoatImageUpload extends LitElement {
+  @property({ attribute: false }) public hass!: HomeAssistant;
+  @property() public label = '';
+  @property() public value?: string;
+  @state() private _busy = false;
+  @state() private _error?: string;
+
+  private _emit(value: string | undefined): void {
+    this.dispatchEvent(
+      new CustomEvent('value-changed', {
+        detail: { value },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private async _upload(ev: Event): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // same file can be picked again later
+    if (!file) return;
+    this._busy = true;
+    this._error = undefined;
+    try {
+      const body = new FormData();
+      body.append('file', file);
+      const doFetch =
+        this.hass.fetchWithAuth?.bind(this.hass) ??
+        ((path: string, init?: RequestInit) => fetch(path, init));
+      const resp = await doFetch('/api/image/upload', { method: 'POST', body });
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = (await resp.json()) as { id?: string };
+      if (!json.id) throw new Error('no id in response');
+      this._emit(`/api/image/serve/${json.id}/original`);
+    } catch (e) {
+      this._error = `Upload fehlgeschlagen (${(e as Error).message})`;
+    } finally {
+      this._busy = false;
+    }
+  }
+
+  private _urlChanged(ev: Event): void {
+    const v = (ev.target as HTMLInputElement).value.trim();
+    this._emit(v || undefined);
+  }
+
+  render() {
+    return html`<div class="row">
+      <div class="thumb">
+        ${this.value
+          ? html`<img src=${this.value} alt="" />`
+          : html`<ha-icon icon="mdi:image-off-outline"></ha-icon>`}
+      </div>
+      <div class="fields">
+        <div class="lab">${this.label}</div>
+        <input
+          class="url"
+          type="text"
+          placeholder="URL oder /local/…"
+          .value=${this.value ?? ''}
+          @change=${this._urlChanged}
+        />
+        ${this._error ? html`<div class="err">${this._error}</div>` : nothing}
+      </div>
+      <label class="up ${this._busy ? 'busy' : ''}">
+        <ha-icon icon=${this._busy ? 'mdi:progress-upload' : 'mdi:upload'}></ha-icon>
+        <input type="file" accept="image/*" @change=${this._upload} ?disabled=${this._busy} />
+      </label>
+      ${this.value
+        ? html`<button class="rm" title="Entfernen" @click=${() => this._emit(undefined)}>
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>`
+        : nothing}
+    </div>`;
+  }
+
+  static styles = css`
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+    }
+    .thumb {
+      width: 44px;
+      height: 60px; /* mirrors the 5:7 stage */
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--secondary-background-color, #eee);
+      display: grid;
+      place-items: center;
+      color: var(--secondary-text-color);
+      flex: 0 0 auto;
+    }
+    .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .fields {
+      flex: 1;
+      min-width: 0;
+    }
+    .lab {
+      font-size: 0.78rem;
+      color: var(--secondary-text-color);
+      margin-bottom: 3px;
+    }
+    .url {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      border: 1px solid var(--divider-color, #ccc);
+      border-radius: 8px;
+      font: inherit;
+      background: none;
+      color: var(--primary-text-color);
+    }
+    .err {
+      font-size: 0.75rem;
+      color: var(--error-color, #e5484d);
+      margin-top: 3px;
+    }
+    .up {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px dashed var(--primary-color, #5b7cfa);
+      color: var(--primary-color, #5b7cfa);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .up.busy {
+      opacity: 0.5;
+    }
+    .up input {
+      display: none;
+    }
+    .rm {
+      border: none;
+      background: none;
+      color: var(--secondary-text-color);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+    }
+    .rm:hover {
+      color: var(--error-color, #e5484d);
+    }
+  `;
+}
+
+// ---------------------------------------------------------------------------
 // Generic list editor for stats / controls (array of {entity,name,icon,...}).
 // ---------------------------------------------------------------------------
 

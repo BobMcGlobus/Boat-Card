@@ -29,6 +29,8 @@ export interface HomeAssistant {
     target?: Record<string, unknown>
   ): Promise<unknown>;
   callWS<T>(msg: Record<string, unknown>): Promise<T>;
+  /** authenticated fetch against the HA backend (used for image upload) */
+  fetchWithAuth?(path: string, init?: RequestInit): Promise<Response>;
   formatEntityState?(entity: HassEntity, state?: string): string;
   hassUrl?(path?: string): string;
 }

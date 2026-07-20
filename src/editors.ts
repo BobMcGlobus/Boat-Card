@@ -266,21 +266,8 @@ export class BoatCardEditor extends LitElement {
               ent('variant_entity'),
             ],
           },
-          bool('show_variant_switch'),
+          { type: 'grid', name: '', schema: [bool('show_variant_switch'), bool('image_remove_black')] },
           { type: 'grid', name: '', schema: [text('stage_ratio'), num('stage_width', 200, 800)] },
-          {
-            type: 'expandable',
-            name: 'images',
-            title: LABELS.images,
-            schema: [
-              // HA's image selector: native "upload picture" flow right in the
-              // editor (stores via /api/image/upload), URL input as fallback
-              { name: 'dock', selector: { image: {} } },
-              { name: 'sailing', selector: { image: {} } },
-              { name: 'trailer', selector: { image: {} } },
-              bool('image_remove_black'),
-            ],
-          },
           {
             type: 'expandable',
             name: 'gps',
@@ -435,6 +422,19 @@ export class BoatCardEditor extends LitElement {
     sections[i] = { ...sections[i], [key]: ev.detail.value };
     this._commit(sections);
   }
+  private _imageChanged(ev: CustomEvent, i: number, variant: string): void {
+    ev.stopPropagation();
+    const sections = this._sections();
+    const images: Record<string, string> = { ...(sections[i].images ?? {}) };
+    const url = ev.detail.value as string | undefined;
+    if (url) images[variant] = url;
+    else delete images[variant];
+    sections[i] = {
+      ...sections[i],
+      images: Object.keys(images).length ? (images as any) : undefined,
+    };
+    this._commit(sections);
+  }
   private _addSection(ev: Event): void {
     const type = (ev.target as HTMLSelectElement).value as SectionType;
     if (!type) return;
@@ -538,6 +538,26 @@ export class BoatCardEditor extends LitElement {
               : nothing}
             ${s.type === 'boat'
               ? html`
+                  <div class="sub-title">Boot-Bilder</div>
+                  <div class="sub-sub">
+                    Pro Ansicht ein Bild hochladen (wird in Home Assistant
+                    gespeichert) oder eine URL eintragen. Empfohlen: Zuschnitt
+                    im Bildformat oben (Standard 5:7).
+                  </div>
+                  ${(
+                    [
+                      ['dock', 'Am Steg'],
+                      ['sailing', 'Unter Segeln'],
+                      ['trailer', 'Auf dem Anhänger'],
+                    ] as const
+                  ).map(
+                    ([variant, label]) => html`<boat-image-upload
+                      .hass=${this.hass}
+                      .label=${label}
+                      .value=${s.images?.[variant]}
+                      @value-changed=${(e: CustomEvent) => this._imageChanged(e, i, variant)}
+                    ></boat-image-upload>`
+                  )}
                   <div class="sub-title">Chips auf dem Boot</div>
                   <div class="sub-sub">Punkte aufs Boot ziehen · Tabs = Positionen je Ansicht</div>
                   <boat-chips-editor

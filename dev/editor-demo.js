@@ -85,6 +85,13 @@ const hass = {
   },
   callService: (...a)=>{ console.log('callService', a); return Promise.resolve(); },
   callWS: ()=>Promise.resolve({}),
+  // fake /api/image/upload: returns an id like HA's image integration
+  fetchWithAuth: (path, init) => {
+    console.log('fetchWithAuth', path, init && init.method);
+    if (path === '/api/image/upload')
+      return Promise.resolve(new Response(JSON.stringify({ id: 'demo42' }), { status: 200 }));
+    return Promise.resolve(new Response('{}', { status: 200 }));
+  },
 };
 
 let config = {
